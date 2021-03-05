@@ -1,0 +1,114 @@
+@namespace h "http://www.w3.org/1999/xhtml";
+.bold {
+  font-weight: bold;
+  }
+h1, .chaptertitle {
+/*章节名*/
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 1em;
+  text-align: center;
+  text-indent: 0;
+  font-size: 1.4em;
+  line-height: 1.1em;
+  font-weight: bold;
+  color: blue;
+}
+.chaptertitle {
+  color: blue;
+}
+.sectiontitle {
+/*段落名*/
+  font-size: 1.2em;
+  font-weight: bold;
+  color: green;
+}
+.subh1 {
+  display: block;
+  font-size: 1.2em;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+}
+/*正文段落缺省格式*/
+p {
+  text-indent: 2em;	/* 首行缩进 */
+  line-height: 1.3;   /* 行距，字size的倍数 */
+  text-align: justify; /* 文本对齐方式 */
+  /* margin-top: 0.5em;	 /* 段落间距 */
+  /* margin-bottom: 0.5em; */
+  }
+table, th, td {
+  text-align: center;
+  border: 1px solid silver;
+  }
+table {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  border-width: 1px 0 0 1px;
+  }
+caption {
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  }
+blockquote, letter {
+  /*引用，书信内容等*/
+  display: block;
+  text-align: justify;
+  margin: 3px;
+  /*margin-left: 0.5em;*/
+  padding: 3px;
+  background: #eee;
+  border-radius: 5px;
+}
+.alignleft {
+  /*文字左顶格*/
+  text-indent: 0em;
+  text-align: left;
+}
+.alignright {
+  /*文字右顶格*/
+  text-align: right;
+}
+sup img {
+/*注解*/
+  line-height: 1em;
+  width: auto;
+  height: 1.0em;
+  margin: 0em;
+  padding: 0;
+  vertical-align: text-top;
+  text-decoration: none;
+}
+.toc-item,.toc-chaptItem,.toc-1stItem,.toc-bigitem {
+  display: block;
+  margin-bottom: 0;
+  margin-left: 19pt;
+  margin-right: 0;
+  margin-top: 0;
+  text-indent: 0;
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline
+  }
+.toc-1stItem {
+  margin-top: 1em;
+  text-indent: 1em
+  }
+.toc-item {
+  text-indent: 1em
+  }
+.toc-bigitem {
+  text-align: center;
+  background: #eee;
+  }
+.mbppagebreak {
+  display: block;
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0
+  }
