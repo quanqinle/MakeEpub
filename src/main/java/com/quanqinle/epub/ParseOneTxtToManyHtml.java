@@ -18,7 +18,7 @@ public class ParseOneTxtToManyHtml {
 
     public static final Logger logger = LoggerFactory.getLogger(ParseOneTxtToManyHtml.class);
 
-    static String regexChapterTitle = "^第.{1,10}章";
+    static String regexChapterTitle = "^第.{1,10}章[^完]";
     static String chapterFileNameFormat = "chapter-%03d.xhtml";
 
     /**
@@ -26,16 +26,21 @@ public class ParseOneTxtToManyHtml {
      * 1. front matter
      * 2. body of the book
      * 3. back matter
+     *
+     * use LinkedHashMap to guarantee insertion order
      */
-    static TreeMap<String, List<String>> frontMatterMap = new TreeMap<>();
-    static TreeMap<String, List<String>> chapterMap = new TreeMap<>();
-//    static TreeMap<String, List<String>> backMatterMap = new TreeMap<>();
+    static LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
+    static LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
+//    static LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
 
     /**
      * the chapter title of front matter
      */
     static String frontMatterTitle = "引言";
 
+    /**
+     * some chart or String have to be trimed
+     */
     static List<String> trimList = Arrays.asList("　");
 
     public static void main(String[] args) {
@@ -147,8 +152,8 @@ public class ParseOneTxtToManyHtml {
             logger.error("unexpected size of front matter");
             return;
         }
-        Map.Entry<String, List<String>> entry = frontMatterMap.firstEntry();
-        writeHTML(entry.getKey(), 0, entry.getValue(), outDirPath);
+
+        writeHTML(frontMatterTitle, 0, frontMatterMap.get(frontMatterTitle), outDirPath);
     }
 
     /**

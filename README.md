@@ -1,6 +1,6 @@
 
 # What is this?
-Sometimes I have some e-books to read, which are in plain text format, such as `.txt`. But I prefer to read books in epub format.
+Sometimes I have some e-books to read, which are in plain text format. However, I prefer to read books in epub format.
 So I write this project, it can convert a `.txt` file to a `.epub` file.
 
 ## Reference
