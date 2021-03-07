@@ -83,6 +83,15 @@ sup img {
   vertical-align: text-top;
   text-decoration: none;
 }
+.toc {
+  padding: 0;
+  line-height: 110%;
+  text-align: justify;
+}
+.toc a {
+  text-decoration: none;
+  color: #000;
+}
 .toc-item,.toc-chaptItem,.toc-1stItem,.toc-bigitem {
   display: block;
   margin-bottom: 0;
