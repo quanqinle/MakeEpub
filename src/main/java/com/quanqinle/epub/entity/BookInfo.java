@@ -5,13 +5,13 @@ import java.util.LinkedHashMap;
 
 /**
  *
+ * @author quanqinle
  */
 public class BookInfo {
     /**
      * the directory for output
      */
     Path outputDir;
-
     /**
      * UUID.randomUUID().toString()
      */

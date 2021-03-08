@@ -3,6 +3,7 @@ package com.quanqinle.epub;
 import com.quanqinle.epub.entity.BookInfo;
 import com.quanqinle.epub.entity.FileInfo;
 import com.quanqinle.epub.util.Constant;
+import com.quanqinle.epub.util.EpubUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,8 +16,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 
 /**
@@ -29,11 +28,10 @@ public class MakeEpubFromTemplate {
     public static final Logger logger = LoggerFactory.getLogger(MakeEpubFromTemplate.class);
 
     /**
-     * original plain text file
+     * original plain text file, the full path can be read directly
      */
     Path srcFilePath;
     BookInfo book;
-
     /**
      * the full path of epub template, copy from it, do not modify the original files
      */
@@ -76,6 +74,9 @@ public class MakeEpubFromTemplate {
         book.setAuthor("曹雪芹");
         book.setCreateDate("2021-03-06");
 
+        /*
+         the following is a complete demo, making srcFilePath to a .epub book
+         */
         MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(srcFilePath, book);
         makeEpub.copyTemplate();
         makeEpub.genBodyHtmls();
@@ -84,7 +85,7 @@ public class MakeEpubFromTemplate {
         makeEpub.modifyTocNcx();
         makeEpub.modifyContentOpf();
 
-        makeEpub.zipEpub(makeEpub.getTemplateDstPath(), book.getOutputDir().resolve(book.getBookTitle() + ".epub"));
+        makeEpub.zipEpub();
     }
 
     /**
@@ -101,83 +102,41 @@ public class MakeEpubFromTemplate {
 
     /**
      * zip folder to epub.
+     * Use {@link com.quanqinle.epub.util.EpubUtils#zipEpub(Path epubSrcFolderPath, Path epubFilePath)}
      * Folder is from the copy of original template.
      * epub is from book.outputdir+book.title+.epub.
      *
      * @throws IOException -
      */
     public void zipEpub() throws IOException {
-        zipEpub(this.getTemplateDstPath(), book.getOutputDir().resolve(book.getBookTitle() + ".epub"));
+        String bookName = book.getBookTitle();
+        if (null == bookName || bookName.isBlank()) {
+            bookName = "ebook";
+        }
+        EpubUtils.zipEpub(this.getTemplateDstPath(), book.getOutputDir().resolve(bookName + ".epub"));
     }
-    /**
-     *
-     * $ zip -0Xq  my-book.epub mimetype
-     * $ zip -Xr9Dq my-book.epub *
-     *
-     * @param epubSrcFolderPath - the source of epub folder
-     * @param epubFilePath - the epub file
-     * @throws IOException -
-     */
-    public void zipEpub(Path epubSrcFolderPath, Path epubFilePath) throws IOException {
-        logger.debug("epub source = {}", epubSrcFolderPath);
-        logger.debug("epub output = {}", epubFilePath);
 
-        FileOutputStream fos = new FileOutputStream(String.valueOf(epubFilePath));
-        ZipOutputStream zos = new ZipOutputStream(fos);
-
-        Files.walk(epubSrcFolderPath)
-                .forEach(
-                        path ->
-                        {
-                            try {
-                                if (!Files.isDirectory(path)) {
-
-                                    Path relativePath = epubSrcFolderPath.relativize(path);
-                                    String relativePathName = relativePath.toString();
-
-//                                    logger.debug("File Added = {}", path);
-//                                    logger.debug("zip entry = {}", relativePathName);
-
-                                    zos.putNextEntry(new ZipEntry(relativePathName));
-
-                                    FileInputStream in = new FileInputStream(String.valueOf(path));
-                                    int len;
-                                    byte[] buffer = new byte[2046];
-                                    while ((len = in.read(buffer)) > 0) {
-                                        zos.write(buffer, 0, len);
-                                    }
-
-                                    in.close();
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                );
-
-        zos.closeEntry();
-        zos.close();
-    }
 
     /**
      * 拷贝epub模板
      */
     public void copyTemplate() throws IOException, URISyntaxException {
 
-        if (Files.exists(templateDstPath)) {
-            Files.walk(templateDstPath)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-        Files.createDirectories(templateDstPath);
-
         Path src = Paths.get(templateSrcUrl.toURI());
+//        Files.walk(src).forEach(System.out::println);
+
         Path dst = templateDstPath;
 
         logger.info("src={}", src);
         logger.info("dst={}", dst);
-//        Files.walk(src).forEach(System.out::println);
+
+        if (Files.exists(dst)) {
+            Files.walk(dst)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        Files.createDirectories(dst);
 
         Files.walk(src)
                 .forEach(
@@ -221,7 +180,10 @@ public class MakeEpubFromTemplate {
     }
 
     /**
-     * generate HTML files of the book
+     * generate HTML files of the book,
+     * and init some parameters which could be used when setting toc.xhtml, toc.ncx, content.opf, etc.
+     *
+     * @author quanqinle
      */
     public void genBodyHtmls() {
         ConvertPlainTxtToHtmlFiles parse = new ConvertPlainTxtToHtmlFiles(this.srcFilePath, book);
