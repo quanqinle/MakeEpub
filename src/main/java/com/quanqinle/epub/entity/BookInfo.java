@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 
 /**
+ * Book info
  *
  * @author quanqinle
  */
@@ -15,9 +16,18 @@ public class BookInfo {
     /**
      * UUID.randomUUID().toString()
      */
-    String UUID = "";
-    String ISBN = "";
+    String uuid = "";
+    /**
+     * ISBN is a numeric commercial book identifier which is intended to be unique.
+     */
+    String isbn = "";
+    /**
+     * the title of the book, which will be used as the name of .epub
+     */
     String bookTitle = "";
+    /**
+     * author
+     */
     String author = "";
     /**
      * such as: 2021-03-06
@@ -27,6 +37,9 @@ public class BookInfo {
      * language, such as: en,zh
      */
     String language = "zh";
+    /**
+     * full path of the cover picture, ONLY .jpg allowed now
+     */
     Path coverJpgFullPath;
 
     /**
@@ -34,16 +47,6 @@ public class BookInfo {
      * value - file info
      */
     LinkedHashMap<String, FileInfo> htmlFileMap = new LinkedHashMap<>();
-
-    /**
-     * Foreword-Usually a short piece written by someone other than the author, the Foreword may provide a context for the main work. Remember that the Foreword is always signed, usually with its author’s name, place, and date.
-     */
-    Boolean hasForeword = false;
-
-    /**
-     * Preface—Written by the author, the Preface often tells how the book came into being, and is often signed with the name, place and date, although this is not always the case.
-     */
-    Boolean hasPreface = false;
 
 
     public Path getOutputDir() {
@@ -54,20 +57,20 @@ public class BookInfo {
         this.outputDir = outputDir;
     }
 
-    public String getUUID() {
-        return UUID;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setUUID(String UUID) {
-        this.UUID = UUID;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
-    public String getISBN() {
-        return ISBN;
+    public String getIsbn() {
+        return isbn;
     }
 
-    public void setISBN(String ISBN) {
-        this.ISBN = ISBN;
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
     public String getBookTitle() {
@@ -108,22 +111,6 @@ public class BookInfo {
 
     public void setCoverJpgFullPath(Path coverJpgFullPath) {
         this.coverJpgFullPath = coverJpgFullPath;
-    }
-
-    public Boolean getHasForeword() {
-        return hasForeword;
-    }
-
-    public void setHasForeword(Boolean hasForeword) {
-        this.hasForeword = hasForeword;
-    }
-
-    public Boolean getHasPreface() {
-        return hasPreface;
-    }
-
-    public void setHasPreface(Boolean hasPreface) {
-        this.hasPreface = hasPreface;
     }
 
     public LinkedHashMap<String, FileInfo> getHtmlFileMap() {

@@ -40,8 +40,8 @@ public class EpubUtils {
      * @throws IOException -
      */
     public static void zipEpub(Path epubSrcFolderPath, Path epubFilePath) throws IOException {
-        logger.debug("epub source = {}", epubSrcFolderPath);
-        logger.debug("epub output = {}", epubFilePath);
+        logger.debug("source folder = {}", epubSrcFolderPath);
+        logger.debug("target epub = {}", epubFilePath);
 
         FileOutputStream fos = new FileOutputStream(String.valueOf(epubFilePath));
         ZipOutputStream zos = new ZipOutputStream(fos);

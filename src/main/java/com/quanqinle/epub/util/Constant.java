@@ -10,21 +10,21 @@ public final class Constant {
     /**
      * the folder name in resource of this project, saving epub template
      */
-    public static final String templateName = "template";
+    public static final String TEMPLATE_NAME = "template";
 
     /**
      * the chapter title of front matter, the chapter just before the 1st chapter
      */
-    public static final String frontMatterTitle = "引言";
+    public static final String FRONT_MATTER_TITLE = "引言";
 
-    public static final String navPointFormat = ""
+    public static final String FORMAT_NAV_POINT = ""
             + "<navPoint id=\"navPoint-%s\" playOrder=\"%s\">"
             + "<navLabel><text>%s</text></navLabel>"
             + "<content src=\"Text/%s\"/>"
             + "</navPoint>\n";
-    public static final String itemFormat = ""
+    public static final String FORMAT_ITEM = ""
             + "<item href=\"Text/%s\" id=\"chapter-%s\" media-type=\"application/xhtml+xml\" />\n";
-    public static final String itemrefFormat = "<itemref idref=\"chapter-%s\" />\n";
-    public static final String referenceFormat = "<reference type=\"%s\" href=\"Text/%s\" title=\"%s\"/>\n";
-    public static final String tocItemFormat = "<p><a href=\"../Text/%s\">%s</a></p>";
+    public static final String FORMAT_ITEMREF = "<itemref idref=\"chapter-%s\" />\n";
+    public static final String FORMAT_REFERENCE = "<reference type=\"%s\" href=\"Text/%s\" title=\"%s\"/>\n";
+    public static final String FORMAT_TOC_ITEM = "<p><a href=\"../Text/%s\">%s</a></p>";
 }

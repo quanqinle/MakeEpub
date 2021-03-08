@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,25 +15,39 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Convert a plain text file `.txt` to some `.xhtml` files.
+ *
  * @author quanqinle
  */
 public class ConvertPlainTxtToHtmlFiles {
 
     public static final Logger logger = LoggerFactory.getLogger(ConvertPlainTxtToHtmlFiles.class);
-    static final String SUFFIX = ".xhtml";
 
-    static String regexChapterTitle = "^第.{1,10}章[^完]";
-    static String chapterFileNameFormat = "chapter-%03d.xhtml";
+    private final String SUFFIX = ".xhtml";
+    private final String regexChapterTitle = "^第.{1,10}章[^完]";
+    private String chapterFileNameFormat = "chapter-%03d.xhtml";
+    /**
+     * some chart or String have to be trimmed in the whole book.
+     * NOTE!
+     * If you want to remove some thing in the book, change them into the parameter.
+     */
+    private List<String> trimList = Arrays.asList("　");
 
-
-    BookInfo book;
+    private BookInfo book;
     /**
      * original plain text file
      */
-    Path srcFilePath;
-    Path drtHtmlFolderPath;
+    private Path srcFilePath;
+    /**
+     * the folder for storing .xhtml files
+     */
+    private Path drtHtmlFolderPath;
 
-    LinkedHashMap<String, FileInfo> htmlFileMap;
+    /**
+     * key - chapter title
+     * val - html file info
+     */
+    private LinkedHashMap<String, FileInfo> htmlFileMap;
 
     /**
      * Books are divided into three basic parts:
@@ -44,26 +57,20 @@ public class ConvertPlainTxtToHtmlFiles {
      *
      * use LinkedHashMap to guarantee insertion order
      */
-    static LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
+    private LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
     /**
      * key - chapter title
      * value - content line
      */
-    static LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
-//    static LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
-
-
-    /**
-     * some chart or String have to be trimmed
-     */
-    static List<String> trimList = Arrays.asList("　");
+    private LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
+//    private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
 
     public static void main(String[] args) {
-        logger.info("start main...");
+
         BookInfo book = new BookInfo();
         book.setOutputDir(Paths.get("D:", "epub"));
         book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
-        book.setUUID(UUID.randomUUID().toString());
+        book.setUuid(UUID.randomUUID().toString());
         book.setLanguage("zh");
         book.setBookTitle("红楼梦");
         book.setAuthor("曹雪芹");
@@ -73,46 +80,43 @@ public class ConvertPlainTxtToHtmlFiles {
 
         ConvertPlainTxtToHtmlFiles parse = new ConvertPlainTxtToHtmlFiles(srcFilePath, book);
         parse.doConvert();
-
-        logger.info("end main...");
     }
 
     public ConvertPlainTxtToHtmlFiles(Path srcFilePath, BookInfo book) {
         this.srcFilePath = srcFilePath;
         this.book = book;
 
-        drtHtmlFolderPath = book.getOutputDir().resolve(Constant.templateName).resolve("OEBPS/Text");
+        this.drtHtmlFolderPath = book.getOutputDir().resolve(Constant.TEMPLATE_NAME).resolve("OEBPS/Text");
 
-        htmlFileMap = book.getHtmlFileMap();
+        this.htmlFileMap = book.getHtmlFileMap();
     }
 
     /**
-     * 执行转换
+     * start to convert the file.
+     * The method is an all in one method, it includes read-parse-rewrite,
+     * so use it just after the construction method.
      */
     public void doConvert() {
 
         List<String> allLines = null;
         try {
             allLines = Files.readAllLines(srcFilePath);
-            logger.info("all lines size: {}", allLines.size());
+            logger.info("Total {} lines in [{}]", allLines.size(), srcFilePath);
         } catch (IOException e) {
-            logger.error("fail to read text file");
+            logger.error("Fail to read file: {}", srcFilePath);
             e.printStackTrace();
         }
 
         parseLinesToMap(allLines);
-        logger.info("FrontMatter map size {}", frontMatterMap.size());
-        logger.info("Chapter map size {}", chapterMap.size());
 
         writeFrontMatter(drtHtmlFolderPath);
         writeChapter(drtHtmlFolderPath);
 
         book.setHtmlFileMap(this.htmlFileMap);
-
     }
 
     /**
-     * convert file lines to chapter map and front matter map
+     * convert all lines of the file to chapter map and front matter map
      *
      * @author quanqinle
      * @param allLines all lines of file
@@ -147,7 +151,7 @@ public class ConvertPlainTxtToHtmlFiles {
                      */
                     if (!chapterLines.isEmpty()) {
                         List<String> copy = new ArrayList<String>(chapterLines);
-                        frontMatterMap.put(Constant.frontMatterTitle, copy);
+                        frontMatterMap.put(Constant.FRONT_MATTER_TITLE, copy);
 
 //                        logger.debug("complete parsing {}, size {}, first line: {}", chapterName, ""+chapterLines.size(), chapterLines.get(0));
 
@@ -185,9 +189,9 @@ public class ConvertPlainTxtToHtmlFiles {
     }
 
     /**
-     * save front matter to HTML, index is 0
+     * save front matter to HTML file, index is 0
      *
-     * @param htmlFolderPath
+     * @param htmlFolderPath HTML file folder
      */
     private void writeFrontMatter (Path htmlFolderPath) {
         if (frontMatterMap.size() != 1) {
@@ -198,19 +202,19 @@ public class ConvertPlainTxtToHtmlFiles {
         String fileName = String.format(chapterFileNameFormat, 0);
         Path htmlPath = htmlFolderPath.resolve(fileName);
 
-        writeHtmlFile(Constant.frontMatterTitle, frontMatterMap.get(Constant.frontMatterTitle), htmlPath);
+        writeHtmlFile(Constant.FRONT_MATTER_TITLE, frontMatterMap.get(Constant.FRONT_MATTER_TITLE), htmlPath);
 
-        FileInfo htmlFile = new FileInfo(0, fileName, Constant.frontMatterTitle);
+        FileInfo htmlFile = new FileInfo(0, fileName, Constant.FRONT_MATTER_TITLE);
         htmlFile.setSuffix(SUFFIX);
         htmlFile.setShortName(fileName.replace(SUFFIX, ""));
         htmlFile.setFullPath(htmlPath);
-        htmlFileMap.put(Constant.frontMatterTitle, htmlFile);
+        htmlFileMap.put(Constant.FRONT_MATTER_TITLE, htmlFile);
     }
 
     /**
-     * save chapters to HTMLs, index comes from 1
+     * save all chapters to HTML files, index comes from 1
      *
-     * @param htmlFolderPath
+     * @param htmlFolderPath HTML file folder
      */
     private void writeChapter (Path htmlFolderPath) {
         int i = 1;
@@ -229,13 +233,14 @@ public class ConvertPlainTxtToHtmlFiles {
             i++;
         }
     }
+
     /**
-     * 保存一个章节到 html 文件
+     * Write all lines of a chapter in a html file
      *
-     * @author 权芹乐
-     * @param chapterName
-     * @param bodyLines
-     * @param htmlPath
+     * @author quanqinle
+     * @param chapterName chapter title, such as "Chapter ONE A Dance with Dragons"
+     * @param bodyLines all lines of this chapter
+     * @param htmlPath full name of the output file
      */
     private void writeHtmlFile(String chapterName, List<String> bodyLines, Path htmlPath) {
         List<String> chpLines = new ArrayList<>();
@@ -268,7 +273,7 @@ public class ConvertPlainTxtToHtmlFiles {
      * @param line -
      * @return
      */
-    private static boolean isChapterTitle(String line) {
+    private boolean isChapterTitle(String line) {
         Pattern p = Pattern.compile(regexChapterTitle);
         Matcher m = p.matcher(line);
         return m.find();

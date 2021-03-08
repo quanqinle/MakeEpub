@@ -3,6 +3,8 @@ package com.quanqinle.epub.entity;
 import java.nio.file.Path;
 
 /**
+ * File info, such as .xhtml
+ *
  * @author quanqinle
  */
 public class FileInfo {
@@ -10,13 +12,25 @@ public class FileInfo {
      * the index in the same type file
      */
     int order;
+    /**
+     * file name with suffix
+     */
     String name;
+    /**
+     * the suffix of file name, including . sign
+     */
     String suffix;
+    /**
+     * file name without suffix
+     */
     String shortName;
     /**
      * such as `<title>` or `<h1>` in HTML
      */
     String describe;
+    /**
+     * the full path
+     */
     Path fullPath;
 
     public FileInfo() {
@@ -30,15 +44,6 @@ public class FileInfo {
         this.order = order;
         this.name = name;
         this.describe = describe;
-    }
-
-    public FileInfo(int order, String name, String suffix, String shortName, String describe, Path fullPath) {
-        this.order = order;
-        this.name = name;
-        this.suffix = suffix;
-        this.shortName = shortName;
-        this.describe = describe;
-        this.fullPath = fullPath;
     }
 
     public int getOrder() {
