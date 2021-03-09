@@ -61,8 +61,12 @@ blockquote, letter {
   margin: 3px;
   /*margin-left: 0.5em;*/
   padding: 3px;
+  border: 2px solid black;
   background: #eee;
   border-radius: 5px;
+}
+blockquote p {
+  text-indent: 0;
 }
 .alignleft {
   /*文字左顶格*/
