@@ -127,6 +127,15 @@ public class ConvertPlainTxtToHtmlFiles {
 
         parseLinesToMap(allLines);
 
+        if (!Files.exists(drtHtmlFolderPath)) {
+            try {
+                Files.createDirectories(drtHtmlFolderPath);
+            } catch (IOException e) {
+                logger.error("Fail to create HTML folder: {}", drtHtmlFolderPath);
+                e.printStackTrace();
+            }
+        }
+
         writeFrontMatter(drtHtmlFolderPath);
         writeChapter(drtHtmlFolderPath);
 
@@ -163,7 +172,6 @@ public class ConvertPlainTxtToHtmlFiles {
 
             // If chapter title, save chapterLines into the previous chapter.
             // If Not chapter title, save line into chapterLines.
-            // Note: Title line would not be added into chapterLines
             if (!isChapterTitle(line)) {
                 chapterLines.add("<p>" + line + "</p>");
             } else {
@@ -184,8 +192,9 @@ public class ConvertPlainTxtToHtmlFiles {
 
                 logger.info("Chapter [{}] has [{}] lines", chapterName, chapterLines.size());
 
-                chapterName = line;
                 chapterLines.clear();
+                chapterName = line;
+                chapterLines.add("<h1>" + chapterName + "</h1>");
             } // end processing chapter title
 
         } // end for-loop allLines
@@ -258,13 +267,16 @@ public class ConvertPlainTxtToHtmlFiles {
     private void writeHtmlFile(String chapterName, List<String> bodyLines, Path htmlPath) {
         List<String> chpLines = new ArrayList<>();
 
-        String topPart = (""
+        String topPart = ""
                 + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
                 + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"\r\n"
                 + "  \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\r\n"
-                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n" + "<head>\r\n" + "<title>CHAPTER_TITLE</title>\r\n"
-                + "<link href=\"../Styles/main.css\" type=\"text/css\" rel=\"stylesheet\"/>\r\n" + "</head>\r\n"
-                + "<body>\r\n" + "<h1>CHAPTER_TITLE</h1>").replace("CHAPTER_TITLE", chapterName);
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n"
+                + "<head>\r\n"
+                + "  <title>" + chapterName + "</title>\r\n"
+                + "  <link href=\"../Styles/main.css\" type=\"text/css\" rel=\"stylesheet\"/>\r\n"
+                + "</head>\r\n"
+                + "<body>\r\n";
         String bottomPart = "</body></html>";
 
         chpLines.add(topPart);
@@ -275,7 +287,7 @@ public class ConvertPlainTxtToHtmlFiles {
             Files.write(htmlPath, chpLines);
 //            logger.debug("complete saving {}, first line: {}", chapterName, bodyLines.get(0));
         } catch (Exception e) {
-            logger.error("fail to save: {}", chapterName);
+            logger.error("Fail to save: {}", chapterName);
             e.printStackTrace();
         }
     }
