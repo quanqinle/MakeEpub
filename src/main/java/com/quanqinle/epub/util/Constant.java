@@ -8,6 +8,11 @@ package com.quanqinle.epub.util;
 public final class Constant {
 
     /**
+     * Note: modify this regex if the chapter title is not match in your book.
+     */
+    public static final String REGEX_CHAPTER_TITLE = "^第.{1,10}章[^完]";
+
+    /**
      * the folder name in resource of this project, saving epub template
      */
     public static final String TEMPLATE_NAME = "template";
@@ -16,6 +21,14 @@ public final class Constant {
      * the chapter title of front matter, the chapter just before the 1st chapter
      */
     public static final String FRONT_MATTER_TITLE = "引言";
+    /**
+     * the chapter title of cover, used in places like these:<title><h1>, etc.
+     */
+    public static final String COVER_TITLE = "封面";
+    /**
+     * the chapter title of TOC, used in places like these:<title><h1>, etc.
+     */
+    public static final String TOC_TITLE = "目录";
 
     public static final String FORMAT_NAV_POINT = ""
             + "<navPoint id=\"navPoint-%s\" playOrder=\"%s\">"

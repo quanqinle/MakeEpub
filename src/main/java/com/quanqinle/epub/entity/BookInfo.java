@@ -36,7 +36,7 @@ public class BookInfo {
     /**
      * language, such as: en,zh
      */
-    String language = "zh";
+    String language = "";
     /**
      * full path of the cover picture, ONLY .jpg allowed now
      */

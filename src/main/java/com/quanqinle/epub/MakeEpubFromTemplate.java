@@ -84,7 +84,7 @@ public class MakeEpubFromTemplate {
     /**
      *
      * @param srcFilePath original plain text file
-     * @param book
+     * @param book output book
      */
     public MakeEpubFromTemplate(Path srcFilePath, BookInfo book)  {
         this.srcFilePath = srcFilePath;
@@ -103,12 +103,12 @@ public class MakeEpubFromTemplate {
     }
 
     /**
-     * start to make the .epub file.
+     * Start to make the .epub file.
      *
-     * The method is an all in one method, it includes read-parse-rewrite, etc.,
+     * The method is an all in one method, it includes the whole steps of read-parse-rewrite, etc.,
      * so you can use it to make a .epub book just after the construction method.
      *
-     * @throws IOException
+     * @throws IOException -
      */
     public void make() throws IOException {
         copyTemplate();
@@ -122,7 +122,7 @@ public class MakeEpubFromTemplate {
     }
 
     /**
-     * zip folder to epub.
+     * Zip folder to epub.
      *
      * Use {@link com.quanqinle.epub.util.EpubUtils#zipEpub(Path epubSrcFolderPath, Path epubFilePath)}
      * Folder is from the copy of original template.
@@ -176,7 +176,7 @@ public class MakeEpubFromTemplate {
     /**
      * Modify cover.xhtml
      *
-     * @throws IOException
+     * @throws IOException -
      */
     public void setBookCover() throws IOException {
         Path coverHtml = templateDstPath.resolve("OEBPS/Text/cover.xhtml");
@@ -202,7 +202,7 @@ public class MakeEpubFromTemplate {
         Path tocHtml = templateDstPath.resolve("OEBPS/Text/toc.xhtml");
         String content =Files.readString(tocHtml);
         content = content.replace("[toc item]", this.tocItemList)
-                .replace("[TOC TITLE]", "目录");
+                .replace("[TOC TITLE]", Constant.TOC_TITLE);
         Files.writeString(tocHtml, content);
     }
 
@@ -214,7 +214,7 @@ public class MakeEpubFromTemplate {
      */
     public void genBodyHtmls() {
         ConvertPlainTxtToHtmlFiles parse = new ConvertPlainTxtToHtmlFiles(this.srcFilePath, book);
-        parse.doConvert();
+        parse.convert();
 
         makeContentForTocNcxAndContentOpf();
     }
@@ -265,14 +265,16 @@ public class MakeEpubFromTemplate {
     private void makeContentForTocNcxAndContentOpf() {
         int index = 1;
 
-        navPointList = navPointList.concat(String.format(Constant.FORMAT_NAV_POINT, index, index, "封面", "cover.xhtml"));
-        referenceList = referenceList.concat(String.format(Constant.FORMAT_REFERENCE, "cover", "cover.xhtml", "封面"));
-        tocItemList = tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, "cover.xhtml", "封面"));
+        // cover
+        navPointList = navPointList.concat(String.format(Constant.FORMAT_NAV_POINT, index, index, Constant.COVER_TITLE, "cover.xhtml"));
+        referenceList = referenceList.concat(String.format(Constant.FORMAT_REFERENCE, "cover", "cover.xhtml", Constant.COVER_TITLE));
+        tocItemList = tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, "cover.xhtml", Constant.COVER_TITLE));
         index++;
 
-        navPointList = navPointList.concat(String.format(Constant.FORMAT_NAV_POINT, index, index, "目录", "toc.xhtml"));
-        referenceList = referenceList.concat(String.format(Constant.FORMAT_REFERENCE, "toc", "toc.xhtml", "目录"));
-        tocItemList = tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, "toc.xhtml", "目录"));
+        // TOC
+        navPointList = navPointList.concat(String.format(Constant.FORMAT_NAV_POINT, index, index, Constant.TOC_TITLE, "toc.xhtml"));
+        referenceList = referenceList.concat(String.format(Constant.FORMAT_REFERENCE, "toc", "toc.xhtml", Constant.TOC_TITLE));
+        tocItemList = tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, "toc.xhtml", Constant.TOC_TITLE));
         index++;
 
         int i = 0;

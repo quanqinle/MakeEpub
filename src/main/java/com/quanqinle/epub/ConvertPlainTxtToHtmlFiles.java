@@ -22,17 +22,29 @@ import java.util.regex.Pattern;
 public class ConvertPlainTxtToHtmlFiles {
 
     public static final Logger logger = LoggerFactory.getLogger(ConvertPlainTxtToHtmlFiles.class);
-
+    /**
+     * Note: modify this regex if the chapter title is not match in your book.
+     */
+    private String regexChapterTitle = Constant.REGEX_CHAPTER_TITLE;
+    /**
+     * Do not recommend to modify it.
+     */
     private final String SUFFIX = ".xhtml";
-    private final String regexChapterTitle = "^第.{1,10}章[^完]";
-    private String chapterFileNameFormat = "chapter-%03d.xhtml";
+    /**
+     * file name used when generate new chapter file
+     */
+    private final String chapterFileNameFormat = "chapter-%03d" + SUFFIX;
+
     /**
      * some chart or String have to be trimmed in the whole book.
      * NOTE!
      * If you want to remove some thing in the book, change them into the parameter.
      */
-    private List<String> trimList = Arrays.asList("　");
+    private final List<String> trimList = Arrays.asList("　");
 
+    /**
+     * output book
+     */
     private BookInfo book;
     /**
      * original plain text file
@@ -79,9 +91,14 @@ public class ConvertPlainTxtToHtmlFiles {
         Path srcFilePath = Paths.get("D:", "book-library", "demo.txt");
 
         ConvertPlainTxtToHtmlFiles parse = new ConvertPlainTxtToHtmlFiles(srcFilePath, book);
-        parse.doConvert();
+        parse.convert();
     }
 
+    /**
+     *
+     * @param srcFilePath original plain text file
+     * @param book output book
+     */
     public ConvertPlainTxtToHtmlFiles(Path srcFilePath, BookInfo book) {
         this.srcFilePath = srcFilePath;
         this.book = book;
@@ -92,11 +109,12 @@ public class ConvertPlainTxtToHtmlFiles {
     }
 
     /**
-     * start to convert the file.
-     * The method is an all in one method, it includes read-parse-rewrite,
+     * Start to convert the file.
+     *
+     * The method is an all in one method, it includes the whole steps of read-parse-rewrite,
      * so use it just after the construction method.
      */
-    public void doConvert() {
+    public void convert() {
 
         List<String> allLines = null;
         try {
@@ -116,19 +134,21 @@ public class ConvertPlainTxtToHtmlFiles {
     }
 
     /**
-     * convert all lines of the file to chapter map and front matter map
+     * Convert all lines of the file to chapter map and front matter map
      *
      * @author quanqinle
      * @param allLines all lines of file
      */
     private void parseLinesToMap(List<String> allLines) {
-        logger.info("begin parseLinesToMap...");
+        logger.info("begin parseLinesToMap()...");
+
         if (allLines == null || allLines.isEmpty()) {
             logger.error("allLines is empty!");
             return;
         }
 
         String chapterName = "";
+        // chapter body
         List<String> chapterLines = new ArrayList<>();
 
         for (String line : allLines) {
@@ -136,56 +156,48 @@ public class ConvertPlainTxtToHtmlFiles {
                 line = line.replace(s, "").trim();
             }
 
+            // skip empty line
             if (line.isBlank()) {
                 continue;
             }
 
-            if (isChapterTitle(line)) {
-                /**
-                 * do not add chapter title into book body lines
-                 */
-
+            // If chapter title, save chapterLines into the previous chapter.
+            // If Not chapter title, save line into chapterLines.
+            // Note: Title line would not be added into chapterLines
+            if (!isChapterTitle(line)) {
+                chapterLines.add("<p>" + line + "</p>");
+            } else {
+                // chapterName is blank means the current line is the 1st chapter title
                 if (chapterName.isBlank()) {
-                    /**
-                     * when it comes to 1st chapter title, save the previous lines into `front matter`
-                     */
-                    if (!chapterLines.isEmpty()) {
-                        List<String> copy = new ArrayList<String>(chapterLines);
+                    if (chapterLines.isEmpty()) {
+                        // the 1st chapter title is just the 1st line of the book.
+                    } else {
+                        // save the previous lines into `front matter`
+                        List<String> copy = new ArrayList<>(chapterLines);
                         frontMatterMap.put(Constant.FRONT_MATTER_TITLE, copy);
-
-//                        logger.debug("complete parsing {}, size {}, first line: {}", chapterName, ""+chapterLines.size(), chapterLines.get(0));
-
-                        chapterLines.clear();
                     }
                 } else {
-                    /*
-                     * save the previous chapter
-                     */
-
-                    List<String> copy = new ArrayList<String>(chapterLines);
+                    // save the previous chapter body
+                    List<String> copy = new ArrayList<>(chapterLines);
                     chapterMap.put(chapterName, copy);
-//                    logger.debug("complete parsing {}, size {}, first line: {}", chapterName, ""+chapterLines.size(), chapterLines.get(0));
-
-                    chapterLines.clear();
                 }
 
+                logger.info("Chapter [{}] has [{}] lines", chapterName, chapterLines.size());
+
                 chapterName = line;
-            } else {
-                chapterLines.add("<p>" + line + "</p>");
-            }
+                chapterLines.clear();
+            } // end processing chapter title
 
-        } // end for allLines
+        } // end for-loop allLines
 
-        /*
-         * save the last chapter
-         */
+        // save the last chapter
         if (!chapterName.isBlank()) {
-//            logger.debug("complete parsing {}, size {}, first line: {}", chapterName, chapterLines.size(), chapterLines.get(0));
             List<String> copy = new ArrayList<>(chapterLines);
             chapterMap.put(chapterName, copy);
+            logger.info("Chapter [{}] has [{}] lines", chapterName, chapterLines.size());
         }
 
-        logger.info("end parseLinesToMap...");
+        logger.info("end parseLinesToMap()...");
     }
 
     /**
@@ -199,12 +211,13 @@ public class ConvertPlainTxtToHtmlFiles {
             return;
         }
 
-        String fileName = String.format(chapterFileNameFormat, 0);
+        int frontMatterHtmlIndex = 0;
+        String fileName = String.format(chapterFileNameFormat, frontMatterHtmlIndex);
         Path htmlPath = htmlFolderPath.resolve(fileName);
 
         writeHtmlFile(Constant.FRONT_MATTER_TITLE, frontMatterMap.get(Constant.FRONT_MATTER_TITLE), htmlPath);
 
-        FileInfo htmlFile = new FileInfo(0, fileName, Constant.FRONT_MATTER_TITLE);
+        FileInfo htmlFile = new FileInfo(frontMatterHtmlIndex, fileName, Constant.FRONT_MATTER_TITLE);
         htmlFile.setSuffix(SUFFIX);
         htmlFile.setShortName(fileName.replace(SUFFIX, ""));
         htmlFile.setFullPath(htmlPath);
@@ -268,10 +281,10 @@ public class ConvertPlainTxtToHtmlFiles {
     }
 
     /**
-     * check if this line is chapter title
+     * Check if this line is chapter title
      *
      * @param line -
-     * @return
+     * @return -
      */
     private boolean isChapterTitle(String line) {
         Pattern p = Pattern.compile(regexChapterTitle);
@@ -279,4 +292,7 @@ public class ConvertPlainTxtToHtmlFiles {
         return m.find();
     }
 
+    public void setRegexChapterTitle(String regexChapterTitle) {
+        this.regexChapterTitle = regexChapterTitle;
+    }
 }
