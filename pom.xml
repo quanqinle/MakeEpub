@@ -10,16 +10,19 @@
 
   <name>MakeEpub</name>
   <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <url>https://github.com/quanqinle/MakeEpub</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
-    <jackson.version>2.12.2</jackson.version>
   </properties>
 
   <dependencies>
+
+    <!-- slf4j -->
+    <!-- It'll pull implicitly slf4j-api.jar / logback-core.jar in as well. -->
+    <!-- Note: explicitly declaring a dependency on the two is not wrong. -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
