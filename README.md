@@ -12,6 +12,7 @@ Sometimes I have some e-books to read, which are in plain text format. Files in 
 
 ### Prerequisites
 > Note:
+> 
 > The default regular expression for parsing chapter names is `^第.{1,10}章[^完]`, if it does not meet your requirements, you can modify `Constant.REGEX_CHAPTER_TITLE` or `ConvertPlainTxtToHtmlFiles.setRegexChapterTitle()`.
 
 The plain text file 'xx.txt' needs to meet the following format. For specific requirements, please read the contents of the file below
@@ -33,7 +34,7 @@ The plain text file 'xx.txt' needs to meet the following format. For specific re
    上面的空行会被自动删除，新生成的文件不会有无用的空行。   
 ```
 
-将生成一些章节文件，例如`chapter-001.xhtml`：
+Many chapter xhtml will be created, such as `chapter-001.xhtml`:
 ```html
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
@@ -89,7 +90,7 @@ public class Demo() {
 ## Zip a folder into `.epub`
 
 ### Prerequisites
-The folder should be a proper epub resource.
+The folder needs to contain some right epub resources.
 
 ### Usage
 > `MakeEpubFromTemplate.java`
