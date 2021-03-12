@@ -51,7 +51,7 @@ public class EpubUtils {
         String mimetypeFileName = "mimetype";
 
         try (FileOutputStream fos = new FileOutputStream(String.valueOf(epubFilePath));
-             ZipOutputStream zos = new ZipOutputStream(fos);
+             ZipOutputStream zos = new ZipOutputStream(fos)
              ) {
 
             addMimetypeToEpub(zos);
@@ -66,11 +66,19 @@ public class EpubUtils {
                                 // IMPORTANT!! epub need / sign, not \ sign in entry name.
                                 String entryName = relativePath.toString().replace("\\", "/");
 
-                                try {
-                                    addFileToZip(entryName, path, zos);
+                                try (FileInputStream fin = new FileInputStream(path.toFile().getPath())) {
+                                    if (Files.isSymbolicLink(path) || Files.isHidden(path)) {
+                                        // TODO
+                                        assert true: "I am not sure if need to check these";
+                                    } else {
+                                        zos.putNextEntry(new ZipEntry(entryName));
+                                        fin.transferTo(zos);
+                                        zos.closeEntry();
+                                    }
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
+
                             }
                     );
         }
@@ -101,41 +109,8 @@ public class EpubUtils {
 
         zos.putNextEntry(entry);
         zos.write(mimetypeBytes);
+        // closeEntry() should be called after putNextEntry() each time
         zos.closeEntry();
-    }
-
-    /**
-     * Write file to zip output stream
-     *
-     * @param entryName use in `new ZipEntry(entryName)`
-     * @param file the file which will be witten into zip
-     * @param zos zip output stream
-     * @throws IOException -
-     */
-    private static void addFileToZip(String entryName, Path file, ZipOutputStream zos) throws IOException {
-
-        if (Files.isDirectory(file) || Files.isHidden(file)) {
-            return;
-        }
-
-        try (FileInputStream in = new FileInputStream(file.toFile().getPath())) {
-            zos.putNextEntry(new ZipEntry(entryName));
-
-            byte[] buffer = new byte[1024];
-            int len;
-            long size = 0L;
-            while ((len = in.read(buffer)) > 0) {
-                zos.write(buffer, 0, len);
-                size += len;
-            }
-//            logger.debug("Stored {} bytes to {}", size, path);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            // closeEntry() should be called after putNextEntry() each time
-            zos.closeEntry();
-        }
-
     }
 
     /**

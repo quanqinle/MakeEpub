@@ -82,24 +82,39 @@ public class MakeEpubFromTemplate {
     }
 
     /**
+     * overload {@link #MakeEpubFromTemplate(Path srcFilePath, Path templateSrcPath, BookInfo book)} with templateSrcPath=null.
      *
      * @param srcFilePath original plain text file
      * @param book output book
      */
     public MakeEpubFromTemplate(Path srcFilePath, BookInfo book)  {
+        this(srcFilePath, null, book);
+    }
+
+    /**
+     *
+     * @param srcFilePath original plain text file
+     * @param templateSrcPath source path of epub template folder. If null, use default value which is from this project
+     * @param book output book
+     */
+    public MakeEpubFromTemplate(Path srcFilePath, Path templateSrcPath, BookInfo book) {
         this.srcFilePath = srcFilePath;
         this.book = book;
         this.templateDstPath = book.getOutputDir().resolve(Constant.TEMPLATE_NAME);
 
-        try {
-            URL templateSrcUrl = getClass().getClassLoader().getResource(Constant.TEMPLATE_NAME);
-            assert templateSrcUrl != null;
-            this.templateSrcPath = Paths.get(templateSrcUrl.toURI());
-        } catch (URISyntaxException e) {
-            logger.error("Fail to find the epub source template: {}", templateSrcPath);
-            System.exit(0);
+        if (templateSrcPath != null) {
+            this.templateSrcPath = templateSrcPath;
+        } else {
+            try {
+                // The codes below will run error, if execute jar created from this project which resource folder in it.
+                URL templateSrcUrl = getClass().getClassLoader().getResource(Constant.TEMPLATE_NAME);
+                assert templateSrcUrl != null;
+                this.templateSrcPath = Paths.get(templateSrcUrl.toURI());
+            } catch (URISyntaxException e) {
+                logger.error("Fail to find the epub source template: {}", templateSrcPath);
+                System.exit(0);
+            }
         }
-
     }
 
     /**
@@ -189,7 +204,7 @@ public class MakeEpubFromTemplate {
         if (src != null && Files.exists(src)) {
             Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
         } else {
-            // TODO
+            // TODO maybe we should create a jpg based on book title
         }
     }
 
