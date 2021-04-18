@@ -15,7 +15,7 @@ Sometimes I have some e-books to read, which are in plain text format. Files in 
 > 
 > The default regular expression for parsing chapter names is `^第.{1,10}章[^完]`, if it does not meet your requirements, you can modify `Constant.REGEX_CHAPTER_TITLE` or `ConvertPlainTxtToHtmlFiles.setRegexChapterTitle()`.
 
-The plain text file 'xx.txt' needs to meet the following format. For specific requirements, please read the contents of the file below
+The plain text file `xx.txt` needs to meet the following format. For specific requirements, please read the contents of the file below:
 ```txt
 文件头处允许有一些文字。
 如果有，则从第一行到“第一章 xxx”之前的内容都保存在同一个`.xhtml`文件中，形成标题叫“引言”的章节。
@@ -133,7 +133,7 @@ public class Demo() {
 ```
 
 ## TODO list
-+ Try [`epublib`](https://github.com/psiegman/epublib) : articles say it is a good java library for epub on the Internet. Try it later.
++ Try [`epublib`](https://github.com/psiegman/epublib) : articles on the Internet say it is a good java library for epub. Try it later.
 
 ## Reference
 + A epub template: refer to [epub-boilerplate](https://github.com/javierarce/epub-boilerplate.git)
