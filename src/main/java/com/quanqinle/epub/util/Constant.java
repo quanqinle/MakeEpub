@@ -39,5 +39,5 @@ public final class Constant {
             + "<item href=\"Text/%s\" id=\"chapter-%s\" media-type=\"application/xhtml+xml\" />\n";
     public static final String FORMAT_ITEMREF = "<itemref idref=\"chapter-%s\" />\n";
     public static final String FORMAT_REFERENCE = "<reference type=\"%s\" href=\"Text/%s\" title=\"%s\"/>\n";
-    public static final String FORMAT_TOC_ITEM = "<p><a href=\"../Text/%s\">%s</a></p>";
+    public static final String FORMAT_TOC_ITEM = "<p><a href=\"../Text/%s\">%s</a></p>\n";
 }

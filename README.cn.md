@@ -4,13 +4,13 @@
 
 # 这个项目是什么？
 
-有些电子书是txt格式，读起来很不方便，我更喜欢epub格式的电子书。所以，我写了这个项目，这个项目会有一些电子书处理功能，但它第一要务将始终是更好的将一个txt转换成epub。
+有些电子书是 txt 格式，读起来很不方便，我更喜欢 epub 格式的电子书。所以，我写了这个项目，这个项目会有一些电子书处理功能，但它第一要务将始终是更好的将一个 txt 转换成 epub。
 
 # 使用场景
 
 ## 将一个 `.txt` 格式电子书转制成 `.epub`
 
-已有纯文本格式的电子书，如`xx.txt`，将其按章节分成多个`chapter-???.xhtml`文件，并根据这些章节文件生成目录文件`toc.xhtml`，再使用工程中的模板`template`，生成epub。
+已有纯文本格式的电子书，如`xx.txt`，将其按章节分成多个`chapter-???.xhtml`文件，并根据这些章节文件生成目录文件`toc.xhtml`，再使用工程中的模板`template`，生成 epub。
  
 ### 前提条件
 
@@ -86,7 +86,7 @@ public class Demo() {
 ## 将电子书文件夹压制成 `.epub`
 
 ### 前提条件
-文件夹中的内容符合epub规范。
+文件夹中的内容符合 epub 规范。
 
 ### 使用方法
 > `MakeEpubFromTemplate.java`
@@ -116,7 +116,7 @@ public class Demo() {
 ```
 
 # 其他
-## 一个推荐的epub目录结构
+## 一个推荐的 epub 目录结构
 ```
 ├── mimetype
 ├── META-INF
@@ -139,5 +139,5 @@ public class Demo() {
 + 试用[`epublib`](https://github.com/psiegman/epublib) ：搜索到这个库，据说好用，以后试试
 
 ## 参考
-+ epub模板：详见 [epub-boilerplate](https://github.com/javierarce/epub-boilerplate.git)
++ epub 模板：详见 [epub-boilerplate](https://github.com/javierarce/epub-boilerplate.git)
 + epubcheck：详见 [w3c epub check tool](https://github.com/w3c/epubcheck)

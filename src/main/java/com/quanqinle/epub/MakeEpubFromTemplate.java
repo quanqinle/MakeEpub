@@ -120,7 +120,7 @@ public class MakeEpubFromTemplate {
     /**
      * Start to make the .epub file.
      *
-     * The method is an all in one method, it includes the whole steps of read-parse-rewrite, etc.,
+     * The method is an all-in-one method, it includes the whole steps of read-parse-rewrite, etc.,
      * so you can use it to make a .epub book just after the construction method.
      *
      * @throws IOException -
@@ -141,7 +141,7 @@ public class MakeEpubFromTemplate {
      *
      * Use {@link com.quanqinle.epub.util.EpubUtils#zipEpub(Path epubSrcFolderPath, Path epubFilePath)}
      * Folder is from the copy of original template.
-     * epub is from book.outputdir+book.title+.epub.
+     * epub is from book.outputDir+book.title+'.epub'.
      *
      * @throws IOException -
      */
@@ -204,7 +204,7 @@ public class MakeEpubFromTemplate {
         if (src != null && Files.exists(src)) {
             Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
         } else {
-            // TODO maybe we should create a jpg based on book title
+            // TODO maybe we should create a jpg based on the book title
         }
     }
 

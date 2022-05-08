@@ -111,7 +111,7 @@ public class ConvertPlainTxtToHtmlFiles {
     /**
      * Start to convert the file.
      *
-     * The method is an all in one method, it includes the whole steps of read-parse-rewrite,
+     * The method is an all-in-one method, it includes the whole steps of read-parse-rewrite,
      * so use it just after the construction method.
      */
     public void convert() {
@@ -277,7 +277,7 @@ public class ConvertPlainTxtToHtmlFiles {
                 + "  <link href=\"../Styles/main.css\" type=\"text/css\" rel=\"stylesheet\"/>\r\n"
                 + "</head>\r\n"
                 + "<body>\r\n";
-        String bottomPart = "</body></html>";
+        String bottomPart = "</body>\r\n</html>";
 
         chpLines.add(topPart);
         chpLines.addAll(bodyLines);
@@ -285,7 +285,7 @@ public class ConvertPlainTxtToHtmlFiles {
 
         try {
             Files.write(htmlPath, chpLines);
-//            logger.debug("complete saving {}, first line: {}", chapterName, bodyLines.get(0));
+            logger.debug("complete saving {}, first line: {}", chapterName, bodyLines.get(0));
         } catch (Exception e) {
             logger.error("Fail to save: {}", chapterName);
             e.printStackTrace();
