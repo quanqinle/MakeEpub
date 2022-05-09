@@ -38,9 +38,9 @@ public class ConvertPlainTxtToHtmlFiles {
     /**
      * some chart or String have to be trimmed in the whole book.
      * NOTE!
-     * If you want to remove some thing in the book, change them into the parameter.
+     * If you want to remove something in the book, change them into the parameter.
      */
-    private final List<String> trimList = Arrays.asList("　");
+    private final List<String> trimList = List.of("　");
 
     /**
      * output book
@@ -77,12 +77,16 @@ public class ConvertPlainTxtToHtmlFiles {
     private LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
 //    private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
 
+    /**
+     * for debugging
+     * @param args -
+     */
     public static void main(String[] args) {
 
         BookInfo book = new BookInfo();
         book.setOutputDir(Paths.get("D:", "epub"));
         book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
-        book.setUuid(UUID.randomUUID().toString());
+        book.setUUID(UUID.randomUUID().toString());
         book.setLanguage("zh");
         book.setBookTitle("红楼梦");
         book.setAuthor("曹雪芹");

@@ -21,6 +21,10 @@ public class EpubUtils {
 
     public static final Logger logger = LoggerFactory.getLogger(EpubUtils.class);
 
+    /**
+     * for debugging
+     * @param args -
+     */
     public static void main(String[] args) {
         Path epubSrcFolderPath = Paths.get("D:", "book-template");
         Path epubFilePath = Paths.get("D:", "book-library", "my-book.epub");

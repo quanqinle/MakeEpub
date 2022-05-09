@@ -62,21 +62,33 @@ public class MakeEpubFromTemplate {
      */
     private String tocItemList = "";
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
-        Path srcFilePath = Paths.get("D:", "book-library", "DEMO.txt");
+    /**
+     * for debugging
+     * @param args -
+     * @throws IOException
+     */
+    public static void main(String[] args) throws IOException {
 
+        // 源文件
+        Path srcFilePath = Paths.get("D:", "book-library", "demo.txt");
+
+        // 目标文件
         BookInfo book = new BookInfo();
         book.setOutputDir(Paths.get("D:", "epub"));
-        book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
-        book.setUuid(UUID.randomUUID().toString());
-        book.setLanguage("zh");
+
+        /* 以下属性非必须 */
         book.setBookTitle("红楼梦");
         book.setAuthor("曹雪芹");
+        // 设置 jpg 格式的封面图
+        book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
+
+        // 建议设置上面3个
+
+        book.setUUID(UUID.randomUUID().toString());
+        book.setLanguage("zh");
         book.setCreateDate("2021-03-06");
 
-        /*
-         * demo: make srcFilePath to a .epub book
-         */
+        // make srcFilePath to a .epub book
         MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(srcFilePath, book);
         makeEpub.make();
     }
@@ -111,7 +123,7 @@ public class MakeEpubFromTemplate {
                 assert templateSrcUrl != null;
                 this.templateSrcPath = Paths.get(templateSrcUrl.toURI());
             } catch (URISyntaxException e) {
-                logger.error("Fail to find the epub source template: {}", templateSrcPath);
+                logger.error("Fail to find the epub source template: {}", this.templateSrcPath);
                 System.exit(0);
             }
         }
@@ -255,7 +267,7 @@ public class MakeEpubFromTemplate {
         Path contentOpfPath = templateDstPath.resolve("OEBPS/content.opf");
 
         String content =Files.readString(contentOpfPath);
-        content = content.replace("[UUID]", book.getUuid())
+        content = content.replace("[UUID]", book.getUUID())
                 .replace("[ISBN]", book.getIsbn())
                 .replace("[BOOK'S TITLE]", book.getBookTitle())
                 .replace("[NAME LASTNAME]", book.getAuthor())

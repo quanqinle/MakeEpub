@@ -57,11 +57,11 @@ public class BookInfo {
         this.outputDir = outputDir;
     }
 
-    public String getUuid() {
+    public String getUUID() {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
+    public void setUUID(String uuid) {
         this.uuid = uuid;
     }
 
