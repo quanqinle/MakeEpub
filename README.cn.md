@@ -4,19 +4,22 @@
 
 # 这个项目是什么？
 
-有些电子书是 txt 格式，读起来很不方便，我更喜欢 epub 格式的电子书。所以，我写了这个项目，这个项目会有一些电子书处理功能，但它第一要务将始终是更好的将一个 txt 转换成 epub。
+有些电子书是 txt 格式，读起来很不方便，我更喜欢 epub 格式的电子书。
+所以，我写了这个项目，这个项目会有一些电子书处理功能，但它第一要务将始终是更好的将一个 txt 转换成 epub。
 
 # 使用场景
 
 ## 将一个 `.txt` 格式电子书转制成 `.epub`
 
-已有纯文本格式的电子书，如`xx.txt`，将其按章节分成多个`chapter-???.xhtml`文件，并根据这些章节文件生成目录文件`toc.xhtml`，再使用工程中的模板`template`，生成 epub。
+已有纯文本格式的电子书，如`xx.txt`，将其按章节分成多个`chapter-???.xhtml`文件，
+并根据这些章节文件生成目录文件`toc.xhtml`，再使用工程中的模板`template`，生成 epub。
  
 ### 前提条件
 
 > 注意：
 > 
-> 默认的解析章节名的正则表达式是`^第.{1,10}章[^完]`，如果不符合你的要求，可以修改`Constant.REGEX_CHAPTER_TITLE`或`ConvertPlainTxtToHtmlFiles.setRegexChapterTitle()`。
+> 默认的解析章节名的正则表达式是`^第.{1,10}章[^完]`，
+> 如果不符合你的要求，可以修改`Constant.REGEX_CHAPTER_TITLE`或`ConvertPlainTxtToHtmlFiles.setRegexChapterTitle()`。
 
 纯文本文件`xx.txt`需要满足如下格式，具体要求请阅读如下文件中的内容：
 ```txt
@@ -60,7 +63,7 @@
 
 ```java
 public class Demo() {
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws IOException {
         // 源文件
         Path srcFilePath = Paths.get("D:", "book-library", "demo.txt");
 

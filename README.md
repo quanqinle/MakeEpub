@@ -4,7 +4,9 @@
 
 I LOVE EPUB.
 
-Sometimes I have some e-books to read, which are in plain text format. Files in txt format are not convenient to read, I prefer to read books in epub format. So I write this project, its first task is to convert a `.txt` file to a `.epub` file.
+Sometimes I have some e-books to read, which are in plain text format. 
+Files in txt format are not convenient to read, I prefer books in epub format. 
+So I write this project, its main purpose is to convert a `.txt` file to a `.epub` file.
 
 # When to use?
 
@@ -13,7 +15,8 @@ Sometimes I have some e-books to read, which are in plain text format. Files in 
 ### Prerequisites
 > Note:
 > 
-> The default regular expression for parsing chapter names is `^第.{1,10}章[^完]`, if it does not meet your requirements, you can modify `Constant.REGEX_CHAPTER_TITLE` or `ConvertPlainTxtToHtmlFiles.setRegexChapterTitle()`.
+> The default regular expression for parsing chapter names is `^第.{1,10}章[^完]`, 
+> if it does not meet your requirements, you can modify `Constant.REGEX_CHAPTER_TITLE` or `ConvertPlainTxtToHtmlFiles.setRegexChapterTitle()`.
 
 The plain text file `xx.txt` needs to meet the following format. For specific requirements, please read the contents of the file below:
 ```txt
@@ -57,7 +60,7 @@ Many chapter xhtml will be created, such as `chapter-001.xhtml`:
 
 ```java
 public class Demo() {
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws IOException {
         // source .txt file
         Path srcFilePath = Paths.get("D:", "book-library", "demo.txt");
 
