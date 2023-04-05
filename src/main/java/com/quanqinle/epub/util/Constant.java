@@ -1,6 +1,6 @@
 package com.quanqinle.epub.util;
 
-/**
+import java.util.List; /**
  * global constant variables
  *
  * @author quanqinle
@@ -11,6 +11,10 @@ public final class Constant {
      * Note: modify this regex if the chapter title is not match in your book.
      */
     public static final String REGEX_CHAPTER_TITLE = "^第.{1,10}章[^完]";
+    /**
+     * Note: modify this regex if the chapter title is not match in your book.
+     */
+    public static final List<String> CHAPTER_TITLE_REGEX_List = List.of("^第.{1,10}章[^完]");
 
     /**
      * the folder name in resource of this project, saving epub template
@@ -30,11 +34,12 @@ public final class Constant {
      */
     public static final String TOC_TITLE = "目录";
 
-    public static final String FORMAT_NAV_POINT = ""
-            + "<navPoint id=\"navPoint-%s\" playOrder=\"%s\">"
-            + "<navLabel><text>%s</text></navLabel>"
-            + "<content src=\"Text/%s\"/>"
-            + "</navPoint>\n";
+  public static final String FORMAT_NAV_POINT =
+      ""
+          + "<navPoint id=\"navPoint-%s\" playOrder=\"%s\">"
+          + "<navLabel><text>%s</text></navLabel>"
+          + "<content src=\"Text/%s\"/>"
+          + "</navPoint>\n";
     public static final String FORMAT_ITEM = ""
             + "<item href=\"Text/%s\" id=\"chapter-%s\" media-type=\"application/xhtml+xml\" />\n";
     public static final String FORMAT_ITEMREF = "<itemref idref=\"chapter-%s\" />\n";

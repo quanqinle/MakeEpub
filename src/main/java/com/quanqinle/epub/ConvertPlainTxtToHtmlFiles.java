@@ -21,275 +21,270 @@ import java.util.regex.Pattern;
  */
 public class ConvertPlainTxtToHtmlFiles {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConvertPlainTxtToHtmlFiles.class);
-    /**
-     * Note: modify this regex if the chapter title is not matched in your book.
-     */
-    private String regexChapterTitle = Constant.REGEX_CHAPTER_TITLE;
-    /**
-     * Do not recommend to modify it.
-     */
-    private final String SUFFIX = ".xhtml";
-    /**
-     * file name used when generate new chapter file
-     */
-    private final String chapterFileNameFormat = "chapter-%03d" + SUFFIX;
+  private static final Logger logger = LoggerFactory.getLogger(ConvertPlainTxtToHtmlFiles.class);
+  /** Note: modify this regex if the chapter title is not matched in your book. */
+  private String regexChapterTitle = Constant.REGEX_CHAPTER_TITLE;
 
-    /**
-     * some chart or String have to be trimmed in the whole book.
-     * NOTE!
-     * If you want to remove something in the book, change them into the parameter.
-     */
-    private final List<String> trimList = List.of("　");
+  private List<String> chapterTitleRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_List);
+  /** Do not recommend to modify it. */
+  private final String SUFFIX = ".xhtml";
+  /** file name used when generate new chapter file */
+  private final String chapterFileNameFormat = "chapter-%03d" + SUFFIX;
 
-    /**
-     * output book
-     */
-    private BookInfo book;
-    /**
-     * original plain text file
-     */
-    private Path srcFilePath;
-    /**
-     * the folder for storing .xhtml files
-     */
-    private Path drtHtmlFolderPath;
+  /**
+   * some chart or String have to be trimmed in the whole book. NOTE! If you want to remove
+   * something in the book, change them into the parameter.
+   */
+  private final List<String> trimList = List.of("　");
 
-    /**
-     * key - chapter title
-     * val - html file info
-     */
-    private LinkedHashMap<String, FileInfo> htmlFileMap;
+  /** output book */
+  private BookInfo book;
+  /** original plain text file */
+  private Path srcFilePath;
+  /** the folder for storing .xhtml files */
+  private Path drtHtmlFolderPath;
 
-    /**
-     * Books are divided into three basic parts:
-     * 1. front matter
-     * 2. body of the book
-     * 3. back matter
-     *
-     * use LinkedHashMap to guarantee insertion order
-     */
-    private LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
-    /**
-     * key - chapter title
-     * value - content line
-     */
-    private LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
-//    private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
+  /** key - chapter title val - html file info */
+  private LinkedHashMap<String, FileInfo> htmlFileMap;
 
-    /**
-     * Constructor
-     *
-     * @param srcFilePath original plain text file
-     * @param book output book
-     */
-    public ConvertPlainTxtToHtmlFiles(Path srcFilePath, BookInfo book) {
-        this.srcFilePath = srcFilePath;
-        this.book = book;
+  /**
+   * Books are divided into three basic parts: 1. front matter 2. body of the book 3. back matter
+   *
+   * <p>use LinkedHashMap to guarantee insertion order
+   */
+  private LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
+  /** key - chapter title value - content line */
+  private LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
+  //    private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
 
-        this.drtHtmlFolderPath = book.getOutputDir().resolve(Constant.TEMPLATE_NAME).resolve("OEBPS/Text");
+  /**
+   * Constructor
+   *
+   * @param srcFilePath original plain text file
+   * @param book output book
+   */
+  public ConvertPlainTxtToHtmlFiles(Path srcFilePath, BookInfo book) {
+    this.srcFilePath = srcFilePath;
+    this.book = book;
 
-        this.htmlFileMap = book.getHtmlFileMap();
+    this.drtHtmlFolderPath =
+        book.getOutputDir().resolve(Constant.TEMPLATE_NAME).resolve("OEBPS/Text");
+
+    this.htmlFileMap = book.getHtmlFileMap();
+  }
+
+  /**
+   * Start to convert the file.
+   *
+   * <p>The method is an all-in-one method, it includes the whole steps of read-parse-rewrite, so
+   * use it just after the construction method.
+   */
+  public void convert() throws IOException {
+
+    List<String> allLines = null;
+    try {
+      allLines = Files.readAllLines(srcFilePath);
+      logger.info("Total {} lines in [{}]", allLines.size(), srcFilePath);
+    } catch (IOException e) {
+      logger.error("Fail to read file: {}", srcFilePath);
+      e.printStackTrace();
+      throw e;
     }
 
-    /**
-     * Start to convert the file.
-     * <p>
-     * The method is an all-in-one method, it includes the whole steps of read-parse-rewrite,
-     * so use it just after the construction method.
-     */
-    public void convert() throws IOException {
+    parseLinesToMap(allLines);
 
-        List<String> allLines = null;
-        try {
-            allLines = Files.readAllLines(srcFilePath);
-            logger.info("Total {} lines in [{}]", allLines.size(), srcFilePath);
-        } catch (IOException e) {
-            logger.error("Fail to read file: {}", srcFilePath);
-            e.printStackTrace();
-            throw e;
-        }
-
-        parseLinesToMap(allLines);
-
-        if (!Files.exists(drtHtmlFolderPath)) {
-            try {
-                Files.createDirectories(drtHtmlFolderPath);
-            } catch (IOException e) {
-                logger.error("Fail to create HTML folder: {}", drtHtmlFolderPath);
-                e.printStackTrace();
-            }
-        }
-
-        writeFrontMatter(drtHtmlFolderPath);
-        writeChapter(drtHtmlFolderPath);
-
-        book.setHtmlFileMap(this.htmlFileMap);
+    if (!Files.exists(drtHtmlFolderPath)) {
+      try {
+        Files.createDirectories(drtHtmlFolderPath);
+      } catch (IOException e) {
+        logger.error("Fail to create HTML folder: {}", drtHtmlFolderPath);
+        e.printStackTrace();
+      }
     }
 
-    /**
-     * Convert all lines of the file to chapter map and front matter map
-     *
-     * @author quanqinle
-     * @param allLines all lines of file
-     */
-    private void parseLinesToMap(List<String> allLines) {
-        logger.info("begin parseLinesToMap()...");
+    writeFrontMatter(drtHtmlFolderPath);
+    writeChapter(drtHtmlFolderPath);
 
-        if (allLines == null || allLines.isEmpty()) {
-            logger.error("allLines is empty!");
-            return;
-        }
+    book.setHtmlFileMap(this.htmlFileMap);
+  }
 
-        String chapterName = "";
-        // chapter body
-        List<String> chapterLines = new ArrayList<>();
+  /**
+   * Convert all lines of the file to chapter map and front matter map
+   *
+   * @author quanqinle
+   * @param allLines all lines of file
+   */
+  private void parseLinesToMap(List<String> allLines) {
+    logger.info("begin parseLinesToMap()...");
 
-        for (String line : allLines) {
-            for (String s : trimList) {
-                line = line.replace(s, "").trim();
-            }
+    if (allLines == null || allLines.isEmpty()) {
+      logger.error("allLines is empty!");
+      return;
+    }
 
-            // skip empty line
-            if (line.isBlank()) {
-                continue;
-            }
+    String chapterName = "";
+    // chapter body
+    List<String> chapterLines = new ArrayList<>();
 
-            // If chapter title, save chapterLines into the previous chapter.
-            // If Not chapter title, save line into chapterLines.
-            if (!isChapterTitle(line)) {
-                chapterLines.add("<p>" + line + "</p>");
-            } else {
-                // chapterName is blank means the current line is the 1st chapter title
-                if (chapterName.isBlank()) {
-                    if (chapterLines.isEmpty()) {
-                        // the 1st chapter title is just the 1st line of the book.
-                    } else {
-                        // save the previous lines into `front matter`
-                        List<String> copy = new ArrayList<>(chapterLines);
-                        frontMatterMap.put(Constant.FRONT_MATTER_TITLE, copy);
-                    }
-                } else {
-                    // save the previous chapter body
-                    List<String> copy = new ArrayList<>(chapterLines);
-                    chapterMap.put(chapterName, copy);
-                }
+    for (String line : allLines) {
+      for (String s : trimList) {
+        line = line.replace(s, "").trim();
+      }
 
-                logger.info("Chapter [{}] has [{}] lines", chapterName, chapterLines.size());
+      // skip empty line
+      if (line.isBlank()) {
+        continue;
+      }
 
-                chapterLines.clear();
-                chapterName = line;
-                chapterLines.add("<h1>" + chapterName + "</h1>");
-            } // end processing chapter title
-
-        } // end for-loop allLines
-
-        // save the last chapter
-        if (!chapterName.isBlank()) {
+      // If chapter title, save chapterLines into the previous chapter.
+      // If Not chapter title, save line into chapterLines.
+      if (!isChapterTitle(line)) {
+        chapterLines.add("<p>" + line + "</p>");
+      } else {
+        // chapterName is blank means the current line is the 1st chapter title
+        if (chapterName.isBlank()) {
+          if (chapterLines.isEmpty()) {
+            // the 1st chapter title is just the 1st line of the book.
+          } else {
+            // save the previous lines into `front matter`
             List<String> copy = new ArrayList<>(chapterLines);
-            chapterMap.put(chapterName, copy);
-            logger.info("Chapter [{}] has [{}] lines", chapterName, chapterLines.size());
+            frontMatterMap.put(Constant.FRONT_MATTER_TITLE, copy);
+          }
+        } else {
+          // save the previous chapter body
+          List<String> copy = new ArrayList<>(chapterLines);
+          chapterMap.put(chapterName, copy);
         }
 
-        logger.info("end parseLinesToMap()...");
+        logger.info("Chapter [{}] has [{}] lines", chapterName, chapterLines.size());
+
+        chapterLines.clear();
+        chapterName = line;
+        chapterLines.add("<h1>" + chapterName + "</h1>");
+      } // end processing chapter title
+    } // end for-loop allLines
+
+    // save the last chapter
+    if (!chapterName.isBlank()) {
+      List<String> copy = new ArrayList<>(chapterLines);
+      chapterMap.put(chapterName, copy);
+      logger.info("Chapter [{}] has [{}] lines", chapterName, chapterLines.size());
     }
 
-    /**
-     * save front matter to HTML file, index is 0
-     *
-     * @param htmlFolderPath HTML file folder
-     */
-    private void writeFrontMatter (Path htmlFolderPath) {
-        if (frontMatterMap.size() != 1) {
-            logger.error("unexpected size of front matter");
-            return;
-        }
+    logger.info("end parseLinesToMap()...");
+  }
 
-        int frontMatterHtmlIndex = 0;
-        String fileName = String.format(chapterFileNameFormat, frontMatterHtmlIndex);
-        Path htmlPath = htmlFolderPath.resolve(fileName);
-
-        writeHtmlFile(Constant.FRONT_MATTER_TITLE, frontMatterMap.get(Constant.FRONT_MATTER_TITLE), htmlPath);
-
-        FileInfo htmlFile = new FileInfo(frontMatterHtmlIndex, fileName, Constant.FRONT_MATTER_TITLE);
-        htmlFile.setSuffix(SUFFIX);
-        htmlFile.setShortName(fileName.replace(SUFFIX, ""));
-        htmlFile.setFullPath(htmlPath);
-        htmlFileMap.put(Constant.FRONT_MATTER_TITLE, htmlFile);
+  /**
+   * save front matter to HTML file, index is 0
+   *
+   * @param htmlFolderPath HTML file folder
+   */
+  private void writeFrontMatter(Path htmlFolderPath) {
+    if (frontMatterMap.size() != 1) {
+      logger.error("unexpected size of front matter");
+      return;
     }
 
-    /**
-     * save all chapters to HTML files, index comes from 1
-     *
-     * @param htmlFolderPath HTML file folder
-     */
-    private void writeChapter (Path htmlFolderPath) {
-        int i = 1;
-        for (String chapterTitle : chapterMap.keySet()) {
-            String fileName = String.format(chapterFileNameFormat, i);
-            Path htmlPath = htmlFolderPath.resolve(fileName);
+    int frontMatterHtmlIndex = 0;
+    String fileName = String.format(chapterFileNameFormat, frontMatterHtmlIndex);
+    Path htmlPath = htmlFolderPath.resolve(fileName);
 
-            writeHtmlFile(chapterTitle, chapterMap.get(chapterTitle), htmlPath);
+    writeHtmlFile(
+        Constant.FRONT_MATTER_TITLE, frontMatterMap.get(Constant.FRONT_MATTER_TITLE), htmlPath);
 
-            FileInfo htmlFile = new FileInfo(i, fileName, chapterTitle);
-            htmlFile.setSuffix(SUFFIX);
-            htmlFile.setShortName(fileName.replace(SUFFIX, ""));
-            htmlFile.setFullPath(htmlPath);
-            htmlFileMap.put(chapterTitle, htmlFile);
+    FileInfo htmlFile = new FileInfo(frontMatterHtmlIndex, fileName, Constant.FRONT_MATTER_TITLE);
+    htmlFile.setSuffix(SUFFIX);
+    htmlFile.setShortName(fileName.replace(SUFFIX, ""));
+    htmlFile.setFullPath(htmlPath);
+    htmlFileMap.put(Constant.FRONT_MATTER_TITLE, htmlFile);
+  }
 
-            i++;
-        }
+  /**
+   * save all chapters to HTML files, index comes from 1
+   *
+   * @param htmlFolderPath HTML file folder
+   */
+  private void writeChapter(Path htmlFolderPath) {
+    int i = 1;
+    for (String chapterTitle : chapterMap.keySet()) {
+      String fileName = String.format(chapterFileNameFormat, i);
+      Path htmlPath = htmlFolderPath.resolve(fileName);
+
+      writeHtmlFile(chapterTitle, chapterMap.get(chapterTitle), htmlPath);
+
+      FileInfo htmlFile = new FileInfo(i, fileName, chapterTitle);
+      htmlFile.setSuffix(SUFFIX);
+      htmlFile.setShortName(fileName.replace(SUFFIX, ""));
+      htmlFile.setFullPath(htmlPath);
+      htmlFileMap.put(chapterTitle, htmlFile);
+
+      i++;
+    }
+  }
+
+  /**
+   * Write all lines of a chapter in a html file
+   *
+   * @author quanqinle
+   * @param chapterName chapter title, such as "Chapter ONE A Dance with Dragons"
+   * @param bodyLines all lines of this chapter
+   * @param htmlPath full name of the output file
+   */
+  private void writeHtmlFile(String chapterName, List<String> bodyLines, Path htmlPath) {
+    List<String> chpLines = new ArrayList<>();
+
+    String topPart =
+        ""
+            + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
+            + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"\r\n"
+            + "  \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\r\n"
+            + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n"
+            + "<head>\r\n"
+            + "  <title>"
+            + chapterName
+            + "</title>\r\n"
+            + "  <link href=\"../Styles/main.css\" type=\"text/css\" rel=\"stylesheet\"/>\r\n"
+            + "</head>\r\n"
+            + "<body>\r\n";
+    String bottomPart = "</body>\r\n</html>";
+
+    chpLines.add(topPart);
+    chpLines.addAll(bodyLines);
+    chpLines.add(bottomPart);
+
+    try {
+      Files.write(htmlPath, chpLines);
+      logger.debug("complete saving {}, first line: {}", chapterName, bodyLines.get(0));
+    } catch (Exception e) {
+      logger.error("Fail to save: {}", chapterName);
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Check if this line is chapter title
+   *
+   * @param line -
+   * @return -
+   */
+  private boolean isChapterTitle(String line) {
+    //        Pattern p = Pattern.compile(regexChapterTitle);
+    //        Matcher m = p.matcher(line);
+    //        return m.find();
+
+      // todo debug
+    for (String reg : chapterTitleRegexList) {
+      Pattern p = Pattern.compile(reg);
+      Matcher m = p.matcher(line);
+      if (m.find()) {
+        return true;
+      }
     }
 
-    /**
-     * Write all lines of a chapter in a html file
-     *
-     * @author quanqinle
-     * @param chapterName chapter title, such as "Chapter ONE A Dance with Dragons"
-     * @param bodyLines all lines of this chapter
-     * @param htmlPath full name of the output file
-     */
-    private void writeHtmlFile(String chapterName, List<String> bodyLines, Path htmlPath) {
-        List<String> chpLines = new ArrayList<>();
+    return false;
+  }
 
-        String topPart = ""
-                + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
-                + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"\r\n"
-                + "  \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\r\n"
-                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n"
-                + "<head>\r\n"
-                + "  <title>" + chapterName + "</title>\r\n"
-                + "  <link href=\"../Styles/main.css\" type=\"text/css\" rel=\"stylesheet\"/>\r\n"
-                + "</head>\r\n"
-                + "<body>\r\n";
-        String bottomPart = "</body>\r\n</html>";
-
-        chpLines.add(topPart);
-        chpLines.addAll(bodyLines);
-        chpLines.add(bottomPart);
-
-        try {
-            Files.write(htmlPath, chpLines);
-            logger.debug("complete saving {}, first line: {}", chapterName, bodyLines.get(0));
-        } catch (Exception e) {
-            logger.error("Fail to save: {}", chapterName);
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Check if this line is chapter title
-     *
-     * @param line -
-     * @return -
-     */
-    private boolean isChapterTitle(String line) {
-        Pattern p = Pattern.compile(regexChapterTitle);
-        Matcher m = p.matcher(line);
-        return m.find();
-    }
-
-    public void setRegexChapterTitle(String regexChapterTitle) {
-        this.regexChapterTitle = regexChapterTitle;
-    }
+  public void setRegexChapterTitle(String regexChapterTitle) {
+    this.regexChapterTitle = regexChapterTitle;
+  }
 }
