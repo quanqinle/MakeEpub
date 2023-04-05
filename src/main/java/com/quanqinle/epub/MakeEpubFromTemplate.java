@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
-import java.util.UUID;
 
 
 /**
@@ -25,13 +24,13 @@ import java.util.UUID;
  */
 public class MakeEpubFromTemplate {
 
-    public static final Logger logger = LoggerFactory.getLogger(MakeEpubFromTemplate.class);
+    private static final Logger logger = LoggerFactory.getLogger(MakeEpubFromTemplate.class);
 
-    BookInfo book;
+    private BookInfo book;
     /**
      * original plain text file, the full path can be read directly
      */
-    Path srcFilePath;
+    private Path srcFilePath;
     /**
      * the full path of epub template, copy from it, do not modify the original files
      */
@@ -63,37 +62,8 @@ public class MakeEpubFromTemplate {
     private String tocItemList = "";
 
     /**
-     * for debugging
-     * @param args -
-     * @throws IOException
-     */
-    public static void main(String[] args) throws IOException {
-
-        // 源文件
-        Path srcFilePath = Paths.get("D:", "book-library", "demo.txt");
-
-        // 目标文件
-        BookInfo book = new BookInfo();
-        book.setOutputDir(Paths.get("D:", "epub"));
-
-        /* 以下属性非必须 */
-        book.setBookTitle("红楼梦");
-        book.setAuthor("曹雪芹");
-        // 设置 jpg 格式的封面图
-        book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
-
-        // 建议设置上面3个
-
-        book.setUUID(UUID.randomUUID().toString());
-        book.setLanguage("zh");
-        book.setCreateDate("2021-03-06");
-
-        // make srcFilePath to a .epub book
-        MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(srcFilePath, book);
-        makeEpub.make();
-    }
-
-    /**
+     * Constructor
+     * <p>
      * overload {@link #MakeEpubFromTemplate(Path srcFilePath, Path templateSrcPath, BookInfo book)} with templateSrcPath=null.
      *
      * @param srcFilePath original plain text file
@@ -104,7 +74,7 @@ public class MakeEpubFromTemplate {
     }
 
     /**
-     *
+     * Constructor
      * @param srcFilePath original plain text file
      * @param templateSrcPath source path of epub template folder. If null, use default value which is from this project
      * @param book output book
@@ -131,7 +101,7 @@ public class MakeEpubFromTemplate {
 
     /**
      * Start to make the .epub file.
-     *
+     * <p>
      * The method is an all-in-one method, it includes the whole steps of read-parse-rewrite, etc.,
      * so you can use it to make a .epub book just after the construction method.
      *
@@ -150,7 +120,7 @@ public class MakeEpubFromTemplate {
 
     /**
      * Zip folder to epub.
-     *
+     * <p>
      * Use {@link com.quanqinle.epub.util.EpubUtils#zipEpub(Path epubSrcFolderPath, Path epubFilePath)}
      * Folder is from the copy of original template.
      * epub is from book.outputDir+book.title+'.epub'.
@@ -170,7 +140,7 @@ public class MakeEpubFromTemplate {
      * copy epub source template to the output directory.
      * This method will delete (if exist) and create the output directory.
      */
-    public void copyTemplate() throws IOException {
+    private void copyTemplate() throws IOException {
 
         Path src = templateSrcPath;
         Path dst = templateDstPath;
@@ -205,7 +175,7 @@ public class MakeEpubFromTemplate {
      *
      * @throws IOException -
      */
-    public void setBookCover() throws IOException {
+    private void setBookCover() throws IOException {
         Path coverHtml = templateDstPath.resolve("OEBPS/Text/cover.xhtml");
         String content =Files.readString(coverHtml);
         content = content.replace("[BOOK'S TITLE]", book.getBookTitle());
@@ -225,7 +195,7 @@ public class MakeEpubFromTemplate {
      *
      * @throws IOException -
      */
-    public void setBookTocHtml() throws IOException {
+    private void setBookTocHtml() throws IOException {
         Path tocHtml = templateDstPath.resolve("OEBPS/Text/toc.xhtml");
         String content =Files.readString(tocHtml);
         content = content.replace("[toc item]", this.tocItemList)
@@ -239,7 +209,7 @@ public class MakeEpubFromTemplate {
      *
      * @author quanqinle
      */
-    public void genBodyHtmls() {
+    private void genBodyHtmls() throws IOException{
         ConvertPlainTxtToHtmlFiles parse = new ConvertPlainTxtToHtmlFiles(this.srcFilePath, book);
         parse.convert();
 
@@ -249,7 +219,7 @@ public class MakeEpubFromTemplate {
     /**
      * Modify toc.ncx
      */
-    public void modifyTocNcx() throws IOException {
+    private void modifyTocNcx() throws IOException {
         Path tocNcxPath = templateDstPath.resolve("OEBPS/toc.ncx");
 
         String content = Files.readString(tocNcxPath);
@@ -263,7 +233,7 @@ public class MakeEpubFromTemplate {
     /**
      * Modify content.opf
      */
-    public void modifyContentOpf() throws IOException {
+    private void modifyContentOpf() throws IOException {
         Path contentOpfPath = templateDstPath.resolve("OEBPS/content.opf");
 
         String content =Files.readString(contentOpfPath);
@@ -286,7 +256,7 @@ public class MakeEpubFromTemplate {
 
     /**
      * organize contents for toc.ncx and content.opf.
-     *
+     * <p>
      * This method has been used in {@link #genBodyHtmls()}
      */
     private void makeContentForTocNcxAndContentOpf() {

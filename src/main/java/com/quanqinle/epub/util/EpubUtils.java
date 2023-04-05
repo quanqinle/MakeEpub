@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -22,24 +21,8 @@ public class EpubUtils {
     public static final Logger logger = LoggerFactory.getLogger(EpubUtils.class);
 
     /**
-     * for debugging
-     * @param args -
-     */
-    public static void main(String[] args) {
-        Path epubSrcFolderPath = Paths.get("D:", "book-template");
-        Path epubFilePath = Paths.get("D:", "book-library", "my-book.epub");
-
-        try {
-            zipEpub(epubSrcFolderPath, epubFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        validateEpubFile(epubFilePath.toFile());
-    }
-
-    /**
      * Zip folder to epub.
-     *
+     * <p>
      * A demo of command line:
      * $ zip -0Xq  my-book.epub mimetype
      * $ zip -Xr9Dq my-book.epub *

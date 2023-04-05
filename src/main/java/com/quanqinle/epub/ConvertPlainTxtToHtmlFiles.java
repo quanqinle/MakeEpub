@@ -21,9 +21,9 @@ import java.util.regex.Pattern;
  */
 public class ConvertPlainTxtToHtmlFiles {
 
-    public static final Logger logger = LoggerFactory.getLogger(ConvertPlainTxtToHtmlFiles.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConvertPlainTxtToHtmlFiles.class);
     /**
-     * Note: modify this regex if the chapter title is not match in your book.
+     * Note: modify this regex if the chapter title is not matched in your book.
      */
     private String regexChapterTitle = Constant.REGEX_CHAPTER_TITLE;
     /**
@@ -78,27 +78,7 @@ public class ConvertPlainTxtToHtmlFiles {
 //    private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
 
     /**
-     * for debugging
-     * @param args -
-     */
-    public static void main(String[] args) {
-
-        BookInfo book = new BookInfo();
-        book.setOutputDir(Paths.get("D:", "epub"));
-        book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
-        book.setUUID(UUID.randomUUID().toString());
-        book.setLanguage("zh");
-        book.setBookTitle("红楼梦");
-        book.setAuthor("曹雪芹");
-        book.setCreateDate("2021-03-06");
-
-        Path srcFilePath = Paths.get("D:", "book-library", "demo.txt");
-
-        ConvertPlainTxtToHtmlFiles parse = new ConvertPlainTxtToHtmlFiles(srcFilePath, book);
-        parse.convert();
-    }
-
-    /**
+     * Constructor
      *
      * @param srcFilePath original plain text file
      * @param book output book
@@ -114,11 +94,11 @@ public class ConvertPlainTxtToHtmlFiles {
 
     /**
      * Start to convert the file.
-     *
+     * <p>
      * The method is an all-in-one method, it includes the whole steps of read-parse-rewrite,
      * so use it just after the construction method.
      */
-    public void convert() {
+    public void convert() throws IOException {
 
         List<String> allLines = null;
         try {
@@ -127,6 +107,7 @@ public class ConvertPlainTxtToHtmlFiles {
         } catch (IOException e) {
             logger.error("Fail to read file: {}", srcFilePath);
             e.printStackTrace();
+            throw e;
         }
 
         parseLinesToMap(allLines);
