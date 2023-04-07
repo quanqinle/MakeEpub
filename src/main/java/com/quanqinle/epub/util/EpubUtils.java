@@ -24,7 +24,9 @@ public class EpubUtils {
      * Zip folder to epub.
      * <p>
      * A demo of command line:
-     * $ zip -0Xq  my-book.epub mimetype
+     * <p>
+     * $ zip -0Xq   my-book.epub mimetype
+     * <p>
      * $ zip -Xr9Dq my-book.epub *
      *
      * @param epubSrcFolderPath the source of epub folder

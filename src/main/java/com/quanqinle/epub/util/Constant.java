@@ -1,6 +1,7 @@
 package com.quanqinle.epub.util;
 
-import java.util.List; /**
+import java.util.List;
+/**
  * global constant variables
  *
  * @author quanqinle
@@ -10,11 +11,7 @@ public final class Constant {
     /**
      * Note: modify this regex if the chapter title is not match in your book.
      */
-    public static final String REGEX_CHAPTER_TITLE = "^第.{1,10}章[^完]";
-    /**
-     * Note: modify this regex if the chapter title is not match in your book.
-     */
-    public static final List<String> CHAPTER_TITLE_REGEX_List = List.of("^第.{1,10}章[^完]");
+    public static final List<String> CHAPTER_TITLE_REGEX_LIST = List.of("^第.{1,10}章[^完]","^第.{1,10}节");
 
     /**
      * the folder name in resource of this project, saving epub template

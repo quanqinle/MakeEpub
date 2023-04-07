@@ -48,7 +48,6 @@ public class BookInfo {
      */
     LinkedHashMap<String, FileInfo> htmlFileMap = new LinkedHashMap<>();
 
-
     public Path getOutputDir() {
         return outputDir;
     }

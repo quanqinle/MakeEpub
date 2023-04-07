@@ -7,9 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,9 +23,7 @@ public class ConvertPlainTxtToHtmlFiles {
 
   private static final Logger logger = LoggerFactory.getLogger(ConvertPlainTxtToHtmlFiles.class);
   /** Note: modify this regex if the chapter title is not matched in your book. */
-  private String regexChapterTitle = Constant.REGEX_CHAPTER_TITLE;
-
-  private List<String> chapterTitleRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_List);
+  private final List<String> chapterTitleRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
   /** Do not recommend to modify it. */
   private final String SUFFIX = ".xhtml";
   /** file name used when generate new chapter file */
@@ -38,23 +36,23 @@ public class ConvertPlainTxtToHtmlFiles {
   private final List<String> trimList = List.of("　");
 
   /** output book */
-  private BookInfo book;
+  private final BookInfo book;
   /** original plain text file */
-  private Path srcFilePath;
+  private final Path srcFilePath;
   /** the folder for storing .xhtml files */
-  private Path drtHtmlFolderPath;
+  private final Path drtHtmlFolderPath;
 
-  /** key - chapter title val - html file info */
-  private LinkedHashMap<String, FileInfo> htmlFileMap;
+  /** key - chapter title, val - html file info */
+  private final LinkedHashMap<String, FileInfo> htmlFileMap;
 
   /**
    * Books are divided into three basic parts: 1. front matter 2. body of the book 3. back matter
    *
    * <p>use LinkedHashMap to guarantee insertion order
    */
-  private LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
-  /** key - chapter title value - content line */
-  private LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
+  private final LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
+  /** key - chapter title, value - content line */
+  private final LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
   //    private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
 
   /**
@@ -81,9 +79,9 @@ public class ConvertPlainTxtToHtmlFiles {
    */
   public void convert() throws IOException {
 
-    List<String> allLines = null;
+    List<String> allLines;
     try {
-      allLines = Files.readAllLines(srcFilePath);
+      allLines = Files.readAllLines(srcFilePath, StandardCharsets.UTF_8);
       logger.info("Total {} lines in [{}]", allLines.size(), srcFilePath);
     } catch (IOException e) {
       logger.error("Fail to read file: {}", srcFilePath);
@@ -268,11 +266,6 @@ public class ConvertPlainTxtToHtmlFiles {
    * @return -
    */
   private boolean isChapterTitle(String line) {
-    //        Pattern p = Pattern.compile(regexChapterTitle);
-    //        Matcher m = p.matcher(line);
-    //        return m.find();
-
-      // todo debug
     for (String reg : chapterTitleRegexList) {
       Pattern p = Pattern.compile(reg);
       Matcher m = p.matcher(line);
@@ -284,7 +277,4 @@ public class ConvertPlainTxtToHtmlFiles {
     return false;
   }
 
-  public void setRegexChapterTitle(String regexChapterTitle) {
-    this.regexChapterTitle = regexChapterTitle;
-  }
 }

@@ -26,11 +26,11 @@ public class MakeEpubFromTemplate {
 
     private static final Logger logger = LoggerFactory.getLogger(MakeEpubFromTemplate.class);
 
-    private BookInfo book;
+    private final BookInfo book;
     /**
      * original plain text file, the full path can be read directly
      */
-    private Path srcFilePath;
+    private final Path srcFilePath;
     /**
      * the full path of epub template, copy from it, do not modify the original files
      */
@@ -38,7 +38,7 @@ public class MakeEpubFromTemplate {
     /**
      * copy epub template to this folder, then modify it
      */
-    private Path templateDstPath;
+    private final Path templateDstPath;
 
     /**
      * `<navPoint></navPoint>` list in `toc.ncx`
@@ -76,7 +76,7 @@ public class MakeEpubFromTemplate {
     /**
      * Constructor
      * @param srcFilePath original plain text file
-     * @param templateSrcPath source path of epub template folder. If null, use default value which is from this project
+     * @param templateSrcPath source path of epub template folder. If null, use default template built-in this project
      * @param book output book
      */
     public MakeEpubFromTemplate(Path srcFilePath, Path templateSrcPath, BookInfo book) {
@@ -236,7 +236,7 @@ public class MakeEpubFromTemplate {
     private void modifyContentOpf() throws IOException {
         Path contentOpfPath = templateDstPath.resolve("OEBPS/content.opf");
 
-        String content =Files.readString(contentOpfPath);
+        String content = Files.readString(contentOpfPath);
         content = content.replace("[UUID]", book.getUUID())
                 .replace("[ISBN]", book.getIsbn())
                 .replace("[BOOK'S TITLE]", book.getBookTitle())

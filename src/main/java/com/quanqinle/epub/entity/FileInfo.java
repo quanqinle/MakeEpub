@@ -9,7 +9,7 @@ import java.nio.file.Path;
  */
 public class FileInfo {
     /**
-     * the index in the same type file
+     * the index in the same type files
      */
     int order;
     /**
