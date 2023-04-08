@@ -35,7 +35,7 @@ public final class Constant {
       </navPoint>
       """;
   public static final String FORMAT_ITEM =
-      "<item href='Text/%s' id='chapter-%s' media-type='application/xhtml+xml />\n";
+      "<item href='Text/%s' id='chapter-%s' media-type='application/xhtml+xml' />\n";
   public static final String FORMAT_ITEMREF = "<itemref idref='chapter-%s' />\n";
   public static final String FORMAT_REFERENCE =
       "<reference type='%s' href='Text/%s' title='%s'/>\n";
