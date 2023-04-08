@@ -22,19 +22,20 @@ import java.util.regex.Pattern;
 public class ConvertPlainTxtToHtmlFiles {
 
   private static final Logger logger = LoggerFactory.getLogger(ConvertPlainTxtToHtmlFiles.class);
+
   /** Note: modify this regex if the chapter title is not matched in your book. */
-  private final List<String> chapterTitleRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
-  /** Do not recommend to modify it. */
-  private final String SUFFIX = ".xhtml";
-
-  /** file name used when generate new chapter file */
-  private String chapterFileNameFormat = "chapter-%03d" + SUFFIX;
-
+  private final List<String> chapterTitleRegexList;
   /**
    * some chart or String have to be trimmed in the whole book. NOTE! If you want to remove
    * something in the book, change them into the parameter.
    */
-  private final List<String> trimList = List.of("　");
+  private final List<String> trimList;
+
+  /** Do not recommend to modify it. */
+  private final String SUFFIX = ".xhtml";
+
+  /** file name used when generate new chapter file */
+  private String chapterFileNameFormat = "chapter-%0$LEN$d" + SUFFIX;
 
   /** output book */
   private final BookInfo book;
@@ -43,7 +44,7 @@ public class ConvertPlainTxtToHtmlFiles {
   /** the folder for storing .xhtml files */
   private final Path drtHtmlFolderPath;
 
-  /** key - chapter title, val - html file info */
+  /** chapter title -> html file info */
   private final LinkedHashMap<String, FileInfo> htmlFileMap;
 
   /**
@@ -52,7 +53,7 @@ public class ConvertPlainTxtToHtmlFiles {
    * <p>use LinkedHashMap to guarantee insertion order
    */
   private final LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
-  /** key - chapter title, value - content line */
+  /** chapter title -> content line */
   private final LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
   //    private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
 
@@ -63,6 +64,10 @@ public class ConvertPlainTxtToHtmlFiles {
    * @param book output book
    */
   public ConvertPlainTxtToHtmlFiles(Path srcFilePath, BookInfo book) {
+
+    this.chapterTitleRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
+    this.trimList = List.of("　");
+
     this.srcFilePath = srcFilePath;
     this.book = book;
 
@@ -99,7 +104,9 @@ public class ConvertPlainTxtToHtmlFiles {
       e.printStackTrace();
     }
 
-    this.setChapterFileNameFormat(String.format("chapter-%0%dd" + SUFFIX, chapterMap.size()));
+    int numberOfDigits = String.valueOf(chapterMap.size()).length();
+    chapterFileNameFormat = chapterFileNameFormat.replace("$LEN$", String.valueOf(numberOfDigits));
+
     writeFrontMatter(drtHtmlFolderPath);
     writeChapter(drtHtmlFolderPath);
 
@@ -109,7 +116,7 @@ public class ConvertPlainTxtToHtmlFiles {
   /**
    * Convert all lines of the file to chapter map and front matter map
    *
-   * @author quanqinle
+   * @author   * quanqinle
    * @param allLines all lines of file
    */
   private void parseLinesToMap(List<String> allLines) {
@@ -232,18 +239,17 @@ public class ConvertPlainTxtToHtmlFiles {
     List<String> chpLines = new ArrayList<>();
 
     String topPart =
-        ""
-            + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
-            + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"\r\n"
-            + "  \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\r\n"
-            + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n"
-            + "<head>\r\n"
-            + "  <title>"
-            + chapterName
-            + "</title>\r\n"
-            + "  <link href=\"../Styles/main.css\" type=\"text/css\" rel=\"stylesheet\"/>\r\n"
-            + "</head>\r\n"
-            + "<body>\r\n";
+        """
+        <?xml version="1.0" encoding="utf-8"?>
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+          "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+          <title>$TITLE</title>
+          <link href="../Styles/main.css" type="text/css" rel="stylesheet"/>
+        </head>
+        <body>
+        """.replace("$TITLE", chapterName);
     String bottomPart = "</body>\r\n</html>";
 
     chpLines.add(topPart);
