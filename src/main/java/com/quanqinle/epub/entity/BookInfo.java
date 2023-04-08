@@ -43,7 +43,7 @@ public class BookInfo {
     Path coverJpgFullPath;
 
     /**
-     * key - chapter title
+     * key - chapter title,
      * value - file info
      */
     LinkedHashMap<String, FileInfo> htmlFileMap = new LinkedHashMap<>();

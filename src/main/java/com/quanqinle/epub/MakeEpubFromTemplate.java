@@ -137,7 +137,7 @@ public class MakeEpubFromTemplate {
 
 
     /**
-     * copy epub source template to the output directory.
+     * Copy epub source template to the output directory.
      * This method will delete (if exist) and create the output directory.
      */
     private void copyTemplate() throws IOException {
@@ -255,7 +255,7 @@ public class MakeEpubFromTemplate {
 
 
     /**
-     * organize contents for toc.ncx and content.opf.
+     * Organize contents for toc.ncx and content.opf.
      * <p>
      * This method has been used in {@link #genBodyHtmls()}
      */

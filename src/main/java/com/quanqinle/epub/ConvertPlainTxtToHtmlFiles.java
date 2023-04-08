@@ -26,8 +26,9 @@ public class ConvertPlainTxtToHtmlFiles {
   private final List<String> chapterTitleRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
   /** Do not recommend to modify it. */
   private final String SUFFIX = ".xhtml";
+
   /** file name used when generate new chapter file */
-  private final String chapterFileNameFormat = "chapter-%03d" + SUFFIX;
+  private String chapterFileNameFormat = "chapter-%03d" + SUFFIX;
 
   /**
    * some chart or String have to be trimmed in the whole book. NOTE! If you want to remove
@@ -91,15 +92,14 @@ public class ConvertPlainTxtToHtmlFiles {
 
     parseLinesToMap(allLines);
 
-    if (!Files.exists(drtHtmlFolderPath)) {
-      try {
-        Files.createDirectories(drtHtmlFolderPath);
-      } catch (IOException e) {
-        logger.error("Fail to create HTML folder: {}", drtHtmlFolderPath);
-        e.printStackTrace();
-      }
+    try {
+      Files.createDirectories(drtHtmlFolderPath);
+    } catch (IOException e) {
+      logger.error("Fail to create HTML folder: {}", drtHtmlFolderPath);
+      e.printStackTrace();
     }
 
+    this.setChapterFileNameFormat(String.format("chapter-%0%dd" + SUFFIX, chapterMap.size()));
     writeFrontMatter(drtHtmlFolderPath);
     writeChapter(drtHtmlFolderPath);
 
@@ -173,7 +173,7 @@ public class ConvertPlainTxtToHtmlFiles {
   }
 
   /**
-   * save front matter to HTML file, index is 0
+   * Save front matter to HTML file, index is 0
    *
    * @param htmlFolderPath HTML file folder
    */
@@ -277,4 +277,11 @@ public class ConvertPlainTxtToHtmlFiles {
     return false;
   }
 
+  public String getChapterFileNameFormat() {
+    return chapterFileNameFormat;
+  }
+
+  public void setChapterFileNameFormat(String chapterFileNameFormat) {
+    this.chapterFileNameFormat = chapterFileNameFormat;
+  }
 }
