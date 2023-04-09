@@ -1,7 +1,7 @@
 package com.quanqinle.epub;
 
 import com.quanqinle.epub.entity.BookInfo;
-import com.quanqinle.epub.entity.FileInfo;
+import com.quanqinle.epub.entity.FileInfoOld;
 import com.quanqinle.epub.util.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class ConvertPlainTxtToHtmlFiles {
   private final Path drtHtmlFolderPath;
 
   /** chapter title -> html file info */
-  private final LinkedHashMap<String, FileInfo> htmlFileMap;
+  private final LinkedHashMap<String, FileInfoOld> htmlFileMap = new LinkedHashMap<>();
 
   /**
    * Books are divided into three basic parts: 1. front matter 2. body of the book 3. back matter
@@ -53,9 +53,9 @@ public class ConvertPlainTxtToHtmlFiles {
    * <p>use LinkedHashMap to guarantee insertion order
    */
   private final LinkedHashMap<String, List<String>> frontMatterMap = new LinkedHashMap<>();
-  /** chapter title -> content line */
+  /** chapter title -> content lines */
   private final LinkedHashMap<String, List<String>> chapterMap = new LinkedHashMap<>();
-  //    private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
+//  private LinkedHashMap<String, List<String>> backMatterMap = new LinkedHashMap<>();
 
   /**
    * Constructor
@@ -74,7 +74,7 @@ public class ConvertPlainTxtToHtmlFiles {
     this.drtHtmlFolderPath =
         book.getOutputDir().resolve(Constant.TEMPLATE_NAME).resolve("OEBPS/Text");
 
-    this.htmlFileMap = book.getHtmlFileMap();
+//    this.htmlFileMap = book.getHtmlFileMap();
   }
 
   /**
@@ -95,7 +95,7 @@ public class ConvertPlainTxtToHtmlFiles {
       throw e;
     }
 
-    parseLinesToMap(allLines);
+    parseLinesToMap(allLines, frontMatterMap, chapterMap);
 
     try {
       Files.createDirectories(drtHtmlFolderPath);
@@ -110,16 +110,21 @@ public class ConvertPlainTxtToHtmlFiles {
     writeFrontMatter(drtHtmlFolderPath);
     writeChapter(drtHtmlFolderPath);
 
-    book.setHtmlFileMap(this.htmlFileMap);
+//    book.setHtmlFileMap(this.htmlFileMap); fixme
   }
 
   /**
    * Convert all lines of the file to chapter map and front matter map
    *
-   * @author   * quanqinle
    * @param allLines all lines of file
+   * @param frontMatterMap front matter title -> content
+   * @param chapterMap chapter title -> content
    */
-  private void parseLinesToMap(List<String> allLines) {
+  private void parseLinesToMap(
+      List<String> allLines,
+      LinkedHashMap<String, List<String>> frontMatterMap,
+      LinkedHashMap<String, List<String>> chapterMap) {
+
     logger.info("begin parseLinesToMap()...");
 
     if (allLines == null || allLines.isEmpty()) {
@@ -191,13 +196,13 @@ public class ConvertPlainTxtToHtmlFiles {
     }
 
     int frontMatterHtmlIndex = 0;
-    String fileName = String.format(chapterFileNameFormat, frontMatterHtmlIndex);
+    String fileName = Constant.FRONT_MATTER_FILE;
     Path htmlPath = htmlFolderPath.resolve(fileName);
 
     writeHtmlFile(
         Constant.FRONT_MATTER_TITLE, frontMatterMap.get(Constant.FRONT_MATTER_TITLE), htmlPath);
 
-    FileInfo htmlFile = new FileInfo(frontMatterHtmlIndex, fileName, Constant.FRONT_MATTER_TITLE);
+    FileInfoOld htmlFile = new FileInfoOld(frontMatterHtmlIndex, fileName, Constant.FRONT_MATTER_TITLE);
     htmlFile.setSuffix(SUFFIX);
     htmlFile.setShortName(fileName.replace(SUFFIX, ""));
     htmlFile.setFullPath(htmlPath);
@@ -205,7 +210,9 @@ public class ConvertPlainTxtToHtmlFiles {
   }
 
   /**
-   * save all chapters to HTML files, index comes from 1
+   * Save all chapters to HTML files, index comes from 1.
+   * <p>
+   * And set htmlFileMap
    *
    * @param htmlFolderPath HTML file folder
    */
@@ -217,7 +224,7 @@ public class ConvertPlainTxtToHtmlFiles {
 
       writeHtmlFile(chapterTitle, chapterMap.get(chapterTitle), htmlPath);
 
-      FileInfo htmlFile = new FileInfo(i, fileName, chapterTitle);
+      FileInfoOld htmlFile = new FileInfoOld(i, fileName, chapterTitle);
       htmlFile.setSuffix(SUFFIX);
       htmlFile.setShortName(fileName.replace(SUFFIX, ""));
       htmlFile.setFullPath(htmlPath);
@@ -258,7 +265,7 @@ public class ConvertPlainTxtToHtmlFiles {
 
     try {
       Files.write(htmlPath, chpLines);
-      logger.debug("complete saving {}, first line: {}", chapterName, bodyLines.get(0));
+      logger.debug("complete saving file: {}, chapter: {}, first line: {}", htmlPath.getFileName(), chapterName, bodyLines.get(0));
     } catch (Exception e) {
       logger.error("Fail to save: {}", chapterName);
       e.printStackTrace();

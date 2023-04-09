@@ -1,46 +1,58 @@
 package com.quanqinle.epub.entity;
 
 import java.nio.file.Path;
+import java.util.List;
 
-/**
- * File info, such as .xhtml
- *
- * @author quanqinle
- */
+/** */
 public class FileInfo {
-  /** the index in the same type files */
-  int order;
-  /** file name with suffix */
+  /** file name without suffix */
   String name;
   /** the suffix of file name, including . sign */
-  String suffix;
-  /** file name without suffix */
-  String shortName;
-  /**
-   * such as `<title>` or `<h1>` in HTML
-   */
-  String describe;
+  String suffix = ".xhtml";
+  /** file name with suffix */
+  String fullName;
   /** the full path */
   Path fullPath;
+  /** such as &lt;title> or &lt;h1> in HTML */
+  String describe;
+  /** content */
+  List<String> lines;
 
-  public FileInfo() {}
-
-  public FileInfo(String name) {
+  public FileInfo(String name, String suffix, String fullName, Path fullPath, String describe, List<String> lines) {
     this.name = name;
+    this.suffix = suffix;
+    this.fullName = fullName;
+    this.fullPath = fullPath;
+    this.describe = describe;
+    this.lines = lines;
   }
 
-  public FileInfo(int order, String name, String describe) {
-    this.order = order;
+  /**
+   * Constructor.
+   * <p>meanwhile set fullName with default suffix
+   * @param name
+   * @param describe
+   */
+  public FileInfo(String name, String describe) {
     this.name = name;
     this.describe = describe;
+    this.fullName = name + this.suffix;
   }
 
-  public int getOrder() {
-    return order;
-  }
-
-  public void setOrder(int order) {
-    this.order = order;
+  /**
+   * Constructor.
+   * <p>meanwhile set fullName with default suffix
+   *
+   * @param name
+   * @param describe
+   * @param lines
+   */
+  public FileInfo(String name, String describe, List<String> lines) {
+    this.name = name;
+    this.describe = describe;
+    // this.suffix default
+    this.fullName = name + this.suffix;
+    this.lines = lines;
   }
 
   public String getName() {
@@ -59,12 +71,20 @@ public class FileInfo {
     this.suffix = suffix;
   }
 
-  public String getShortName() {
-    return shortName;
+  public String getFullName() {
+    return fullName;
   }
 
-  public void setShortName(String shortName) {
-    this.shortName = shortName;
+  public void setFullName(String fullName) {
+    this.fullName = fullName;
+  }
+
+  public Path getFullPath() {
+    return fullPath;
+  }
+
+  public void setFullPath(Path fullPath) {
+    this.fullPath = fullPath;
   }
 
   public String getDescribe() {
@@ -75,11 +95,11 @@ public class FileInfo {
     this.describe = describe;
   }
 
-  public Path getFullPath() {
-    return fullPath;
+  public List<String> getLines() {
+    return lines;
   }
 
-  public void setFullPath(Path fullPath) {
-    this.fullPath = fullPath;
+  public void setLines(List<String> lines) {
+    this.lines = lines;
   }
 }

@@ -9,18 +9,21 @@ import static org.junit.jupiter.api.Assertions.*;
 class EpubUtilsTest {
 
   @Test
-  void zipEpub() {}
-
-  @Test
-  void validateEpubFile() {
+  void zipEpub() {
     Path epubSrcFolderPath = Paths.get("D:", "book-template");
-    Path epubFilePath = Paths.get("D:", "book-library", "my-book.epub");
+    Path epubFilePath = Paths.get("D:", "my-book.epub");
 
     try {
       EpubUtils.zipEpub(epubSrcFolderPath, epubFilePath);
     } catch (IOException e) {
       e.printStackTrace();
     }
-    EpubUtils.validateEpubFile(epubFilePath.toFile());
   }
+
+  @Test
+  void validateEpubFile() {
+    Path epubFilePath = Paths.get("D:", "my-book.epub");
+    assertTrue(EpubUtils.validateEpubFile(epubFilePath.toFile()));
+  }
+
 }

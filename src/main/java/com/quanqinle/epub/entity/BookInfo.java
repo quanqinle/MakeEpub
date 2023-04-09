@@ -2,6 +2,7 @@ package com.quanqinle.epub.entity;
 
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Book info
@@ -23,8 +24,24 @@ public class BookInfo {
   String createDate = "";
   /** language, such as: en,zh */
   String language = "";
-  /** full path of the cover picture, ONLY .jpg allowed now */
+  /** full path of the cover picture, ONLY .jpg allowed current */
   Path coverJpgFullPath;
+
+  LinkedHashMap<String, FileInfo> frontMatter = new LinkedHashMap<>();;
+
+  boolean hasManyBooks = false;
+  /**
+   * If only one book/volume in the book, use this variable.
+   * <p> chapter title -> file
+   * <p> Use {@link #chapterMap} or {@link #subBook}.
+   */
+  LinkedHashMap<String, FileInfo> chapterMap = new LinkedHashMap<>();
+  /**
+   * If two books/volumes or more in the book, use this variable.
+   * <p> sub-book title -> chapter map [chapter title -> file]
+   * <p> Use {@link #chapterMap} or {@link #subBook}.
+   */
+  LinkedHashMap<String, LinkedHashMap<String, FileInfo>> subBook = new LinkedHashMap<>();
 
   /** chapter title -> file info */
   LinkedHashMap<String, FileInfo> htmlFileMap = new LinkedHashMap<>();
@@ -99,5 +116,45 @@ public class BookInfo {
 
   public void setHtmlFileMap(LinkedHashMap<String, FileInfo> htmlFileMap) {
     this.htmlFileMap = htmlFileMap;
+  }
+
+  public String getUuid() {
+    return uuid;
+  }
+
+  public void setUuid(String uuid) {
+    this.uuid = uuid;
+  }
+
+  public Map<String, FileInfo> getFrontMatter() {
+    return frontMatter;
+  }
+
+  public void setFrontMatter(LinkedHashMap<String, FileInfo> frontMatter) {
+    this.frontMatter = frontMatter;
+  }
+
+  public boolean isHasManyBooks() {
+    return hasManyBooks;
+  }
+
+  public void setHasManyBooks(boolean hasManyBooks) {
+    this.hasManyBooks = hasManyBooks;
+  }
+
+  public LinkedHashMap<String, FileInfo> getChapterMap() {
+    return chapterMap;
+  }
+
+  public void setChapterMap(LinkedHashMap<String, FileInfo> chapterMap) {
+    this.chapterMap = chapterMap;
+  }
+
+  public LinkedHashMap<String, LinkedHashMap<String, FileInfo>> getSubBook() {
+    return subBook;
+  }
+
+  public void setSubBook(LinkedHashMap<String, LinkedHashMap<String, FileInfo>> subBook) {
+    this.subBook = subBook;
   }
 }

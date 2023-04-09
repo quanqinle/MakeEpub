@@ -1,7 +1,6 @@
 package com.quanqinle.epub;
 
 import com.quanqinle.epub.entity.BookInfo;
-import com.quanqinle.epub.entity.FileInfo;
 import com.quanqinle.epub.util.Constant;
 import com.quanqinle.epub.util.EpubUtils;
 import org.slf4j.Logger;
@@ -33,16 +32,16 @@ public class MakeEpubFromTemplate {
   /** copy epub template to this folder, then modify it */
   private final Path templateDstPath;
 
-  /** `<navPoint></navPoint>` list in `toc.ncx` */
+  /** `&lt;navPoint>&lt;/navPoint>` list in `toc.ncx`, for making toc tree */
   private String navPointList = "";
-  /** `<item></item>` list in `content.opf` */
+  /** `&lt;item\>&lt;/item>` list in `content.opf` */
   private String itemList = "";
-  /** `<itemref></itemref>` list in `content.opf` */
+  /** `&lt;itemref>&lt;/itemref>` list in `content.opf` */
   private String itemrefList = "";
-  /** `<reference></reference>` list in `content.opf` */
+  /** `&lt;reference>&lt;/reference>` list in `content.opf` */
   private String referenceList = "";
   /**
-   * `<li></li>` list in `toc.xhtml`
+   * `&lt;li>&lt;/li>` list in `toc.xhtml`
    */
   private String tocItemList = "";
 
@@ -115,7 +114,7 @@ public class MakeEpubFromTemplate {
    *
    * @throws IOException -
    */
-  public void zipEpub() throws IOException {
+  private void zipEpub() throws IOException {
     String bookName = book.getBookTitle();
     if (null == bookName || bookName.isBlank()) {
       bookName = "ebook";
@@ -187,13 +186,14 @@ public class MakeEpubFromTemplate {
     Path tocHtml = templateDstPath.resolve("OEBPS/Text/toc.xhtml");
     String content = Files.readString(tocHtml);
     content =
-        content.replace("[toc item]", this.tocItemList).replace("[TOC TITLE]", Constant.TOC_TITLE);
+        content.replace("[toc item]", this.tocItemList)
+                .replace("[TOC TITLE]", Constant.TOC_TITLE);
     Files.writeString(tocHtml, content);
   }
 
   /**
-   * Generate HTML files of the book, and init some parameters which could be used when setting
-   * toc.xhtml, toc.ncx, content.opf, etc.
+   * Generate HTML files of the book,
+   * <p>and init some parameters which could be used when setting toc.xhtml, toc.ncx, content.opf, etc.
    *
    * @author quanqinle
    */
@@ -235,10 +235,7 @@ public class MakeEpubFromTemplate {
             .replace("[NAME LASTNAME]", book.getAuthor())
             .replace("[LASTNAME, NAME]", book.getAuthor())
             .replace("[LANGUAGE]", book.getLanguage())
-            .replace("[DATE]", book.getCreateDate());
-
-    content =
-        content
+            .replace("[DATE]", book.getCreateDate())
             .replace("[manifest item list]", this.itemList)
             .replace("[spine itemref list]", this.itemrefList)
             .replace("[guide reference list]", this.referenceList);
@@ -280,6 +277,25 @@ public class MakeEpubFromTemplate {
             String.format(Constant.FORMAT_TOC_ITEM, "toc.xhtml", Constant.TOC_TITLE));
     index++;
 
+    // front matter
+    if (book.getHtmlFileMap().containsKey(Constant.FRONT_MATTER_TITLE)) {
+      String fileName = "front_matter.xhtml";
+      navPointList =
+              navPointList.concat(
+                      String.format(Constant.FORMAT_NAV_POINT, index, index, Constant.FRONT_MATTER_TITLE, fileName));
+      itemList =
+              itemList.concat(String.format(Constant.FORMAT_ITEM, fileName, fileName));
+      itemrefList =
+              itemrefList.concat(String.format(Constant.FORMAT_ITEMREF, fileName));
+      referenceList =
+              referenceList.concat(
+                      String.format(Constant.FORMAT_REFERENCE, "text", fileName, Constant.FRONT_MATTER_TITLE));
+      tocItemList =
+              tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, fileName, Constant.FRONT_MATTER_TITLE));
+      index++;
+    }
+
+    // chapters
     int i = 0;
     for (String chapterTitle : book.getHtmlFileMap().keySet()) {
       if (0 == i && !Constant.FRONT_MATTER_TITLE.equals(chapterTitle)) {
@@ -288,14 +304,15 @@ public class MakeEpubFromTemplate {
         continue;
       }
 
-      FileInfo file = book.getHtmlFileMap().get(chapterTitle);
-      String fileName = file.getName();
+      String fileName = book.getHtmlFileMap().get(chapterTitle).getName();
 
       navPointList =
           navPointList.concat(
               String.format(Constant.FORMAT_NAV_POINT, index, index, chapterTitle, fileName));
-      itemList = itemList.concat(String.format(Constant.FORMAT_ITEM, fileName, i));
-      itemrefList = itemrefList.concat(String.format(Constant.FORMAT_ITEMREF, i));
+      itemList =
+              itemList.concat(String.format(Constant.FORMAT_ITEM, fileName, "chapter-"+i));
+      itemrefList =
+              itemrefList.concat(String.format(Constant.FORMAT_ITEMREF, "chapter-"+i));
       referenceList =
           referenceList.concat(
               String.format(Constant.FORMAT_REFERENCE, "text", fileName, chapterTitle));
