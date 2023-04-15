@@ -1,6 +1,7 @@
 package com.quanqinle.epub;
 
 import com.quanqinle.epub.entity.BookInfo;
+import com.quanqinle.epub.entity.FileInfo;
 import com.quanqinle.epub.util.Constant;
 import com.quanqinle.epub.util.EpubUtils;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 
 /**
  * Make the EPUB using the existing template
@@ -197,11 +199,11 @@ public class MakeEpubFromTemplate {
    *
    * @author quanqinle
    */
-  private void genBodyHtmls() throws IOException {
-    ConvertPlainTxtToHtmlFiles parse = new ConvertPlainTxtToHtmlFiles(this.srcFilePath, book);
+  private void genBodyHtmls() {
+    ConvertTxtToHtmls parse = new ConvertTxtToHtmls(srcFilePath, book);
     parse.convert();
 
-    makeContentForTocNcxAndContentOpf();
+    makeContentForTocNcxAndContentOpf(book);
   }
 
   /**
@@ -248,7 +250,7 @@ public class MakeEpubFromTemplate {
    * <p>
    * This method has been used in {@link #genBodyHtmls()}
    */
-  private void makeContentForTocNcxAndContentOpf() {
+  private void makeContentForTocNcxAndContentOpf(BookInfo bookInfo) {
     int index = 1;
 
     // cover
@@ -278,50 +280,75 @@ public class MakeEpubFromTemplate {
     index++;
 
     // front matter
-    if (book.getHtmlFileMap().containsKey(Constant.FRONT_MATTER_TITLE)) {
-      String fileName = "front_matter.xhtml";
+    if (!bookInfo.getFrontMatter().isEmpty()) {
+      String frontMatterTitle = Constant.FRONT_MATTER_TITLE;
+      FileInfo frontMatter = bookInfo.getFrontMatter().get(frontMatterTitle);
+      String fileName = frontMatter.getFullName();
       navPointList =
               navPointList.concat(
-                      String.format(Constant.FORMAT_NAV_POINT, index, index, Constant.FRONT_MATTER_TITLE, fileName));
+                      String.format(Constant.FORMAT_NAV_POINT, index, index, frontMatterTitle, fileName));
       itemList =
               itemList.concat(String.format(Constant.FORMAT_ITEM, fileName, fileName));
       itemrefList =
               itemrefList.concat(String.format(Constant.FORMAT_ITEMREF, fileName));
       referenceList =
               referenceList.concat(
-                      String.format(Constant.FORMAT_REFERENCE, "text", fileName, Constant.FRONT_MATTER_TITLE));
+                      String.format(Constant.FORMAT_REFERENCE, "text", fileName, frontMatterTitle));
       tocItemList =
-              tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, fileName, Constant.FRONT_MATTER_TITLE));
+              tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, fileName, frontMatterTitle));
       index++;
     }
 
-    // chapters
-    int i = 0;
-    for (String chapterTitle : book.getHtmlFileMap().keySet()) {
-      if (0 == i && !Constant.FRONT_MATTER_TITLE.equals(chapterTitle)) {
-        // the chapter just before the 1st chapter
-        i++;
-        continue;
+    if (bookInfo.isHasManyBooks()) {
+      // some sub-book in it
+      for (LinkedHashMap<String, FileInfo> chapterMap : bookInfo.getSubBook().values()) {
+        for (String chapterTitle : chapterMap.keySet()) {
+          FileInfo fileInfo = chapterMap
+                  .get(chapterTitle);
+
+          String fileName = fileInfo.getName();
+          String fileFullName = fileInfo.getFullName();
+          navPointList =
+                  navPointList.concat(
+                          String.format(Constant.FORMAT_NAV_POINT, index, index, chapterTitle, fileFullName));
+          itemList =
+                  itemList.concat(String.format(Constant.FORMAT_ITEM, fileFullName, fileName));
+          itemrefList =
+                  itemrefList.concat(String.format(Constant.FORMAT_ITEMREF, fileName));
+          referenceList =
+                  referenceList.concat(
+                          String.format(Constant.FORMAT_REFERENCE, "text", fileFullName, chapterTitle));
+          tocItemList =
+                  tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, fileFullName, chapterTitle));
+
+          index++;
+        }
       }
 
-      String fileName = book.getHtmlFileMap().get(chapterTitle).getName();
+    } else {
+      // chapters in ONE book
+      for (String chapterTitle : bookInfo.getChapterMap().keySet()) {
+        FileInfo fileInfo = bookInfo.getChapterMap().get(chapterTitle);
 
-      navPointList =
-          navPointList.concat(
-              String.format(Constant.FORMAT_NAV_POINT, index, index, chapterTitle, fileName));
-      itemList =
-              itemList.concat(String.format(Constant.FORMAT_ITEM, fileName, "chapter-"+i));
-      itemrefList =
-              itemrefList.concat(String.format(Constant.FORMAT_ITEMREF, "chapter-"+i));
-      referenceList =
-          referenceList.concat(
-              String.format(Constant.FORMAT_REFERENCE, "text", fileName, chapterTitle));
-      tocItemList =
-          tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, fileName, chapterTitle));
+        String fileName = fileInfo.getName();
+        String fileFullName = fileInfo.getFullName();
+        navPointList =
+                navPointList.concat(
+                        String.format(Constant.FORMAT_NAV_POINT, index, index, chapterTitle, fileFullName));
+        itemList =
+                itemList.concat(String.format(Constant.FORMAT_ITEM, fileFullName, fileName));
+        itemrefList =
+                itemrefList.concat(String.format(Constant.FORMAT_ITEMREF, fileName));
+        referenceList =
+                referenceList.concat(
+                        String.format(Constant.FORMAT_REFERENCE, "text", fileFullName, chapterTitle));
+        tocItemList =
+                tocItemList.concat(String.format(Constant.FORMAT_TOC_ITEM, fileFullName, chapterTitle));
 
-      index++;
-      i++;
+        index++;
+      }
     }
+
   }
 
 }

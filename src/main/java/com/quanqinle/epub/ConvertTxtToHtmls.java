@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * [NEW] Convert a plain text file `.txt` to some `.xhtml` files.
+ * Convert a plain text file `.txt` to some `.xhtml` files.
  *
  * @author quanqinle
  */
@@ -28,7 +28,7 @@ public class ConvertTxtToHtmls {
   /** file name used when generate new sub-book file */
   private String bookFileNameFormat = "book-%d";
   /** file name used when generate new chapter file */
-  private String chapterFileNameFormat = "chapter-%03d";
+  private final String chapterFileNameFormat = "chapter-%03d";
   /** original plain text file */
   private final Path srcTxtPath;
   /** output book */
@@ -40,8 +40,7 @@ public class ConvertTxtToHtmls {
     this.srcTxtPath = srcTxtPath;
     this.book = book;
     this.drtHtmlFolderPath =
-            book.getOutputDir().resolve(Constant.TEMPLATE_NAME).resolve("OEBPS/Text");
-
+        book.getOutputDir().resolve(Constant.TEMPLATE_NAME).resolve("OEBPS/Text");
   }
 
   public void convert() {
@@ -61,8 +60,12 @@ public class ConvertTxtToHtmls {
     }
 
     writeFrontMatter(book, drtHtmlFolderPath);
-    writeChapter(book, drtHtmlFolderPath);
 
+    if (book.isHasManyBooks()) {
+      writeBooks(book, drtHtmlFolderPath);
+    } else {
+      writeChapters(book, drtHtmlFolderPath);
+    }
   }
 
   /**
@@ -82,62 +85,64 @@ public class ConvertTxtToHtmls {
     }
     return allLines;
   }
-private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
-  logger.info("begin parseLines()...");
 
-  if (allLines == null || allLines.isEmpty()) {
-    logger.error("allLines is empty!");
-    return;
-  }
+  private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
+    logger.info("begin parseLines()...");
 
-  List<String> removeList = List.of("　");
-  List<String> bookRegexList = List.copyOf(Constant.BOOK_TITLE_REGEX_LIST);
-  List<String> chapterRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
-
-  String subBookName = "";
-  String chapterName = "";
-  // html body
-  List<String> htmlBodyLines = new ArrayList<>();
-  /* is previous line in a chapter? */
-  boolean isPreviousLineInChapter = false;
-
-  boolean isFirstLine = true;
-  boolean existFrontMatter = false;
-
-  int idxBook = 0;
-  int idxChapter = 0;
-
-  for (String line : allLines) {
-    for (String s : removeList) {
-      line = line.replace(s, "").trim();
+    if (allLines == null || allLines.isEmpty()) {
+      logger.error("allLines is empty!");
+      return;
     }
 
-    // skip empty line
-    if (line.isBlank()) {
-      continue;
-    }
+    List<String> removeList = List.copyOf(Constant.REMOVE_LIST);
+    List<String> bookRegexList = List.copyOf(Constant.BOOK_TITLE_REGEX_LIST);
+    List<String> chapterRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
 
-    boolean isSubBookTitle = isSubBookTitle(line, bookRegexList);
-    boolean isChapterTitle = isChapterTitle(line, chapterRegexList);
-    if (isFirstLine) {
-      isFirstLine = false;
-      if (!isSubBookTitle && !isChapterTitle) {
-        htmlBodyLines.add("<p>" + line + "</p>");
-        existFrontMatter = true;
+    String subBookName = "";
+    String chapterName = "";
+    // html body
+    List<String> htmlBodyLines = new ArrayList<>();
+    // is previous line in a chapter?
+    boolean isPreviousLineInChapter = false;
+
+    boolean isFirstLine = true;
+    boolean existFrontMatter = false;
+
+    int idxBook = 0;
+    int idxChapter = 0;
+
+    for (String line : allLines) {
+      for (String s : removeList) {
+        line = line.replace(s, "").trim();
+      }
+
+      // skip empty line
+      if (line.isBlank()) {
         continue;
       }
-    }
+
+      boolean isSubBookTitle = isSubBookTitle(line, bookRegexList);
+      boolean isChapterTitle = isChapterTitle(line, chapterRegexList);
+      if (isFirstLine) {
+        isFirstLine = false;
+        if (!isSubBookTitle && !isChapterTitle) {
+          htmlBodyLines.add("<p>" + line + "</p>");
+          existFrontMatter = true;
+          continue;
+        }
+      }
 
       if (!isSubBookTitle && !isChapterTitle) {
         htmlBodyLines.add("<p>" + line + "</p>");
       } else {
-        if (existFrontMatter) {
+        if (existFrontMatter && bookInfo.getFrontMatter().isEmpty()) {
           // save the previous lines into `front matter`
           List<String> copy = new ArrayList<>(htmlBodyLines);
           FileInfo fileInfo =
               new FileInfo(Constant.FRONT_MATTER_FILE, Constant.FRONT_MATTER_TITLE, copy);
           bookInfo.getFrontMatter().put(Constant.FRONT_MATTER_TITLE, fileInfo);
-          logger.info("Title [{}] has [{}] lines", Constant.FRONT_MATTER_TITLE, htmlBodyLines.size());
+          logger.info(
+              "Front-matter [{}] has [{}] lines", Constant.FRONT_MATTER_TITLE, htmlBodyLines.size());
         } else {
           if (isPreviousLineInChapter) {
             // save the previous chapter body
@@ -147,17 +152,17 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
             FileInfo fileInfo = new FileInfo(fileName, chapterName, new ArrayList<>(htmlBodyLines));
 
             bookInfo.getSubBook().get(subBookName).put(chapterName, fileInfo);
+            logger.info("Chapter [{}] has [{}] lines", chapterName, htmlBodyLines.size());
           } else {
             // save the previous sub-book body
             String fileName = String.format(bookFileNameFormat, idxBook);
-            FileInfo fileInfo = new FileInfo(fileName, chapterName, new ArrayList<>(htmlBodyLines));
+            FileInfo fileInfo = new FileInfo(fileName, subBookName, new ArrayList<>(htmlBodyLines));
 
             LinkedHashMap<String, FileInfo> chapterMap = new LinkedHashMap<>();
-            chapterMap.put(chapterName, fileInfo);
-            bookInfo.getSubBook().put(chapterName, chapterMap);
+            chapterMap.put(subBookName, fileInfo);
+            bookInfo.getSubBook().put(subBookName, chapterMap);
+            logger.info("Book [{}] has [{}] lines", subBookName, htmlBodyLines.size());
           }
-
-          logger.info("Title [{}] has [{}] lines", chapterName, htmlBodyLines.size());
         }
 
         htmlBodyLines.clear();
@@ -165,19 +170,18 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
         if (isSubBookTitle) {
           htmlBodyLines.add("<h1>" + line + "</h1>");
           subBookName = line;
-          idxBook ++;
+          idxBook++;
           idxChapter = 0;
           isPreviousLineInChapter = false;
         } else {
           htmlBodyLines.add("<h2>" + line + "</h2>");
           chapterName = line;
-          idxChapter ++;
+          idxChapter++;
           isPreviousLineInChapter = true;
         }
       }
-  } // end for-loop allLines
-
-}
+    } // end for-loop allLines
+  }
 
   private void parseLines(List<String> allLines, BookInfo bookInfo) {
     logger.info("begin parseLines()...");
@@ -187,7 +191,7 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
       return;
     }
 
-    List<String> trimList = List.of("　");
+    List<String> removeList = List.copyOf(Constant.REMOVE_LIST);
     List<String> regexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
 
     String chapterName = "";
@@ -196,7 +200,7 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
 
     int i = 1;
     for (String line : allLines) {
-      for (String s : trimList) {
+      for (String s : removeList) {
         line = line.replace(s, "").trim();
       }
 
@@ -217,7 +221,8 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
           } else {
             // save the previous lines into `front matter`
             List<String> copy = new ArrayList<>(chapterLines);
-            FileInfo fileInfo = new FileInfo(Constant.FRONT_MATTER_FILE, Constant.FRONT_MATTER_TITLE, copy);
+            FileInfo fileInfo =
+                new FileInfo(Constant.FRONT_MATTER_FILE, Constant.FRONT_MATTER_TITLE, copy);
             bookInfo.getFrontMatter().put(Constant.FRONT_MATTER_TITLE, fileInfo);
           }
         } else {
@@ -241,7 +246,14 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
     // save the last chapter
     if (!chapterName.isBlank()) {
 
-      bookInfo.getChapterMap().put(chapterName, new FileInfo(String.format(chapterFileNameFormat, i++), chapterName, new ArrayList<>(chapterLines)));
+      bookInfo
+          .getChapterMap()
+          .put(
+              chapterName,
+              new FileInfo(
+                  String.format(chapterFileNameFormat, i++),
+                  chapterName,
+                  new ArrayList<>(chapterLines)));
 
       logger.info("Chapter [{}] has [{}] lines", chapterName, chapterLines.size());
     }
@@ -252,9 +264,9 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
   /**
    * Check if this line is chapter title
    *
-   * @param line
-   * @param chapterTitleRegexList
-   * @return
+   * @param line -
+   * @param chapterTitleRegexList -
+   * @return -
    */
   private boolean isChapterTitle(String line, List<String> chapterTitleRegexList) {
     for (String reg : chapterTitleRegexList) {
@@ -271,9 +283,9 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
   /**
    * Check if this line is sub-book title
    *
-   * @param line
-   * @param chapterTitleRegexList
-   * @return
+   * @param line -
+   * @param chapterTitleRegexList -
+   * @return -
    */
   private boolean isSubBookTitle(String line, List<String> chapterTitleRegexList) {
     for (String reg : chapterTitleRegexList) {
@@ -291,7 +303,7 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
    * Save front matter to HTML file, index is 0
    *
    * @param bookInfo book
-   * @param htmlFolderPath  HTML file folder
+   * @param htmlFolderPath HTML file folder
    */
   private void writeFrontMatter(BookInfo bookInfo, Path htmlFolderPath) {
     if (bookInfo.getFrontMatter().size() != 1) {
@@ -301,30 +313,46 @@ private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
 
     FileInfo frontMatter = bookInfo.getFrontMatter().get(Constant.FRONT_MATTER_TITLE);
     Path htmlPath = htmlFolderPath.resolve(frontMatter.getFullName());
-
-    EpubUtils.writeHtmlFile(
-            Constant.FRONT_MATTER_TITLE, frontMatter.getLines(), htmlPath);
-
     frontMatter.setFullPath(htmlPath);
+
+    EpubUtils.writeHtmlFile(Constant.FRONT_MATTER_TITLE, frontMatter.getLines(), htmlPath);
   }
 
   /**
-   * Save all chapters to HTML files, index comes from 1.
+   * Save all chapters to HTML files
    *
    * @param bookInfo book
    * @param htmlFolderPath HTML file folder
    */
-  private void writeChapter(BookInfo bookInfo, Path htmlFolderPath) {
+  private void writeChapters(BookInfo bookInfo, Path htmlFolderPath) {
     LinkedHashMap<String, FileInfo> chapterMap = bookInfo.getChapterMap();
 
     for (String chapterTitle : chapterMap.keySet()) {
       FileInfo fileInfo = chapterMap.get(chapterTitle);
       Path htmlPath = htmlFolderPath.resolve(fileInfo.getFullName());
+      fileInfo.setFullPath(htmlPath);
 
       EpubUtils.writeHtmlFile(chapterTitle, fileInfo.getLines(), htmlPath);
-
-      fileInfo.setFullPath(htmlPath);
     }
   }
 
+  /**
+   * Save all books and chapters to HTML files
+   *
+   * @param bookInfo book
+   * @param htmlFolderPath HTML file folder
+   */
+  private void writeBooks(BookInfo bookInfo, Path htmlFolderPath) {
+    LinkedHashMap<String, LinkedHashMap<String, FileInfo>> bookMap = bookInfo.getSubBook();
+
+    bookMap.values().forEach(chapterMap -> {
+      chapterMap.forEach((chapterTitle, fileInfo) -> {
+        Path htmlPath = htmlFolderPath.resolve(fileInfo.getFullName());
+        fileInfo.setFullPath(htmlPath);
+
+        EpubUtils.writeHtmlFile(fileInfo.getDescribe(), fileInfo.getLines(), htmlPath);
+      });
+    });
+
+  }
 }

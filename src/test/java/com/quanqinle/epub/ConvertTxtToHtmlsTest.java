@@ -1,30 +1,21 @@
 package com.quanqinle.epub;
 
 import com.quanqinle.epub.entity.BookInfo;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import java.io.IOException;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-/**
- * @author quanqinle
- */
-class MakeEpubFromTemplateTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-  @BeforeEach
-  void setUp() {}
-
-  @AfterEach
-  void tearDown() {}
+class ConvertTxtToHtmlsTest {
 
   @Test
-  void make() {
+  void convert() {
     // 源文件
     Path srcFilePath =
-        Paths.get("C:\\Users\\quanql\\Desktop\\《亵渎》烟雨江南.txt");
+            Paths.get("C:\\Users\\quanql\\Desktop\\《亵渎》烟雨江南.txt");
 
     // 目标文件
     BookInfo book = new BookInfo();
@@ -42,19 +33,10 @@ class MakeEpubFromTemplateTest {
     book.setUUID(UUID.randomUUID().toString());
     book.setLanguage("zh");
     book.setCreateDate("2023-04-07");
+//    book.setIsbn("xyz");
 
-    // make srcFilePath to a .epub book
-    MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(srcFilePath, book);
-    try {
-      makeEpub.make();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Test
-  void zipEpub() {
+    ConvertTxtToHtmls parse = new ConvertTxtToHtmls(srcFilePath, book);
+    parse.convert();
 
   }
-
 }

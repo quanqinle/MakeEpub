@@ -9,12 +9,18 @@ import java.util.List;
  */
 public final class Constant {
 
+  /** Note: modify this regex if the sub-book title is not match in your book. */
   public static final List<String> BOOK_TITLE_REGEX_LIST =
           List.of("^第.{1,10}卷[^完]", "^第.{1,10}册[^完]");
 
   /** Note: modify this regex if the chapter title is not match in your book. */
   public static final List<String> CHAPTER_TITLE_REGEX_LIST =
-      List.of("^第.{1,10}章[^完]", "^第.{1,10}节[^完]");
+      List.of("^第.{1,10}章[^完]", "^第.{1,10}节[^完]", "^初章[^完]");
+  /**
+   * some chart or String have to be trimmed in the whole book. NOTE! If you want to remove
+   * something in the book, change them into the parameter.
+   */
+  public static final List<String> REMOVE_LIST = List.of("　");
 
   /** the folder name in resource of this project, saving epub template */
   public static final String TEMPLATE_NAME = "template";

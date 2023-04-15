@@ -27,8 +27,15 @@ public class BookInfo {
   /** full path of the cover picture, ONLY .jpg allowed current */
   Path coverJpgFullPath;
 
-  LinkedHashMap<String, FileInfo> frontMatter = new LinkedHashMap<>();;
+  /**
+   * front matter in the book
+   * <p> title -> file
+   */
+  LinkedHashMap<String, FileInfo> frontMatter = new LinkedHashMap<>();
 
+  /**
+   * More than ONE sub-book/volume in the book. Default false.
+   */
   boolean hasManyBooks = false;
   /**
    * If only one book/volume in the book, use this variable.
@@ -42,9 +49,6 @@ public class BookInfo {
    * <p> Use {@link #chapterMap} or {@link #subBook}.
    */
   LinkedHashMap<String, LinkedHashMap<String, FileInfo>> subBook = new LinkedHashMap<>();
-
-  /** chapter title -> file info */
-  LinkedHashMap<String, FileInfo> htmlFileMap = new LinkedHashMap<>();
 
   public Path getOutputDir() {
     return outputDir;
@@ -108,14 +112,6 @@ public class BookInfo {
 
   public void setCoverJpgFullPath(Path coverJpgFullPath) {
     this.coverJpgFullPath = coverJpgFullPath;
-  }
-
-  public LinkedHashMap<String, FileInfo> getHtmlFileMap() {
-    return htmlFileMap;
-  }
-
-  public void setHtmlFileMap(LinkedHashMap<String, FileInfo> htmlFileMap) {
-    this.htmlFileMap = htmlFileMap;
   }
 
   public String getUuid() {

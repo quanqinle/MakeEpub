@@ -3,7 +3,9 @@ package com.quanqinle.epub.entity;
 import java.nio.file.Path;
 import java.util.List;
 
-/** */
+/**
+ * file info, mainly for .html file
+ */
 public class FileInfo {
   /** file name without suffix */
   String name;
@@ -13,7 +15,7 @@ public class FileInfo {
   String fullName;
   /** the full path */
   Path fullPath;
-  /** such as &lt;title> or &lt;h1> in HTML */
+  /** such as text in &lt;title> or &lt;h1> in HTML */
   String describe;
   /** content */
   List<String> lines;
