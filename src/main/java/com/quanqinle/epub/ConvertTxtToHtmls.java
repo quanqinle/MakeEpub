@@ -26,6 +26,7 @@ public class ConvertTxtToHtmls {
   private final String bookFileNameFormat = "book-%d";
   /** file name used when generate new chapter file */
   private final String chapterFileNameFormat = "chapter-%03d";
+
   /** original plain text file */
   private final Path srcTxtPath;
   /** output book */
@@ -35,16 +36,19 @@ public class ConvertTxtToHtmls {
 
   /**
    * Constructor
-   * @param srcTxtPath  original plain text file
+   *
    * @param bookInfo book info
    */
-  public ConvertTxtToHtmls(Path srcTxtPath, BookInfo bookInfo) {
-    this.srcTxtPath = srcTxtPath;
+  public ConvertTxtToHtmls(BookInfo bookInfo) {
+    this.srcTxtPath = bookInfo.getSrcTxtPath();
     this.book = bookInfo;
     this.drtHtmlFolderPath =
-        book.getOutputDir().resolve(bookInfo.getTemplateName()).resolve("OEBPS/Text");
+        book.getOutputDir().resolve(bookInfo.getTempFolder()).resolve("OEBPS/Text");
   }
 
+  /**
+   * Use this method directly after the Constructor() method.
+   */
   public void convert() {
     List<String> allLines = readTxt(srcTxtPath);
 
@@ -88,6 +92,12 @@ public class ConvertTxtToHtmls {
     return allLines;
   }
 
+  /**
+   * When the source book has some sub-books, parse lines into each sub-book
+   *
+   * @param allLines all lines from txt files
+   * @param bookInfo book info
+   */
   private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
     logger.info("begin parseLines()...");
 
@@ -181,6 +191,12 @@ public class ConvertTxtToHtmls {
     } // end for-loop allLines
   }
 
+  /**
+   * When the source book has only ONE book, parse lines into each chapter
+   *
+   * @param allLines all lines from txt files
+   * @param bookInfo book info
+   */
   private void parseLines(List<String> allLines, BookInfo bookInfo) {
     logger.info("begin parseLines()...");
 
@@ -292,7 +308,7 @@ public class ConvertTxtToHtmls {
   }
 
   /**
-   * Save front matter to HTML file, index is 0
+   * Save front matter to HTML file
    *
    * @param bookInfo book
    * @param htmlFolderPath HTML file folder
@@ -329,7 +345,7 @@ public class ConvertTxtToHtmls {
   }
 
   /**
-   * Save all books and chapters to HTML files
+   * Save all chapters (within sub-books) to HTML files
    *
    * @param bookInfo book
    * @param htmlFolderPath HTML file folder

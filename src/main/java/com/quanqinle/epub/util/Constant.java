@@ -1,13 +1,13 @@
 package com.quanqinle.epub.util;
 
-import java.util.List;
-
 /**
  * global constant variables
  *
  * @author quanqinle
  */
 public final class Constant {
+  /** the folder name in resource of this project, saving epub template */
+  public static final String TEMPLATE_FOLDER = "template";
 
   public static final String FORMAT_NAV_POINT =
       """

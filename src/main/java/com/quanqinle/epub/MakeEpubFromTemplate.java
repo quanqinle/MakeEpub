@@ -27,12 +27,11 @@ public class MakeEpubFromTemplate {
   private static final Logger logger = LoggerFactory.getLogger(MakeEpubFromTemplate.class);
 
   private final BookInfo book;
-  /** original plain text file, the full path can be read directly */
-  private final Path srcFilePath;
+
   /** the full path of epub template, copy from it, do not modify the original files */
   private Path templateSrcPath;
-  /** copy epub template to this folder, then modify it */
-  private final Path templateDstPath;
+  /** the temp path is inside output path. copy epub template to this folder, then modify files inside it */
+  private final Path tempPath;
 
   /** `&lt;navPoint>&lt;/navPoint>` list in `toc.ncx`, for making toc tree */
   private String navPointList = "";
@@ -49,36 +48,19 @@ public class MakeEpubFromTemplate {
 
   /**
    * Constructor
-   * <p>
-   * overload {@link #MakeEpubFromTemplate(Path srcFilePath, Path templateSrcPath, BookInfo
-   * book)} with templateSrcPath=null.
    *
-   * @param srcFilePath original plain text file
    * @param bookInfo output book
    */
-  public MakeEpubFromTemplate(Path srcFilePath, BookInfo bookInfo) {
-    this(srcFilePath, null, bookInfo);
-  }
-
-  /**
-   * Constructor
-   *
-   * @param srcFilePath original plain text file
-   * @param templateSrcPath source path of epub template folder. If null, use default template
-   *     built-in this project
-   * @param bookInfo output book
-   */
-  public MakeEpubFromTemplate(Path srcFilePath, Path templateSrcPath, BookInfo bookInfo) {
-    this.srcFilePath = srcFilePath;
+  public MakeEpubFromTemplate(BookInfo bookInfo) {
     this.book = bookInfo;
-    this.templateDstPath = book.getOutputDir().resolve(bookInfo.getTemplateName());
+    this.tempPath = book.getOutputDir().resolve(bookInfo.getTempFolder());
 
-    if (templateSrcPath != null) {
-      this.templateSrcPath = templateSrcPath;
+    if (bookInfo.getTemplateSrcPath() != null) {
+      this.templateSrcPath = bookInfo.getTemplateSrcPath();
     } else {
       try {
         // The codes below will run error, if execute jar created from this project which resource folder in it.
-        URL templateSrcUrl = getClass().getClassLoader().getResource(bookInfo.getTemplateName());
+        URL templateSrcUrl = getClass().getClassLoader().getResource(Constant.TEMPLATE_FOLDER);
         assert templateSrcUrl != null;
         this.templateSrcPath = Paths.get(templateSrcUrl.toURI());
       } catch (URISyntaxException e) {
@@ -92,13 +74,15 @@ public class MakeEpubFromTemplate {
    * Start to make the .epub file.
    * <p>
    * The method is an all-in-one method, it includes the whole steps of read-parse-rewrite, etc.,
-   * so you can use it to make a .epub book just after the construction method.
+   * so you can use it to make a .epub book just after the Constructor() method.
    *
    * @throws IOException -
    */
   public void make() throws IOException {
-    copyTemplate();
+    copyTemplateToTempPath();
     genBodyHtmls();
+
+    makeContentForTocNcxAndContentOpf();
     setBookCover();
     setBookTocHtml();
     modifyTocNcx();
@@ -117,22 +101,18 @@ public class MakeEpubFromTemplate {
    * @throws IOException -
    */
   private void zipEpub() throws IOException {
-    String bookName = book.getBookTitle();
-    if (null == bookName || bookName.isBlank()) {
-      bookName = "ebook";
-    }
-    EpubUtils.zipEpub(this.templateDstPath, book.getOutputDir().resolve(bookName + ".epub"));
+    EpubUtils.zipEpub(this.tempPath, book.getOutputDir().resolve(book.getBookTitle() + ".epub"));
   }
 
   /**
    * Copy epub source template to the output directory.
    * This method will delete (if exist) and create the output directory.
    */
-  private void copyTemplate() throws IOException {
+  private void copyTemplateToTempPath() throws IOException {
 
     Path src = templateSrcPath;
-    Path dst = templateDstPath;
-    //        Files.walk(src).forEach(System.out::println); // debug
+    Path dst = tempPath;
+    // Files.walk(src).forEach(System.out::println);
 
     logger.info("source template = {}", src);
     logger.info("output folder = {}", dst);
@@ -165,13 +145,13 @@ public class MakeEpubFromTemplate {
    * @throws IOException -
    */
   private void setBookCover() throws IOException {
-    Path coverHtml = templateDstPath.resolve("OEBPS/Text/cover.xhtml");
+    Path coverHtml = tempPath.resolve("OEBPS/Text/cover.xhtml");
     String content = Files.readString(coverHtml);
     content = content.replace("[BOOK'S TITLE]", book.getBookTitle());
     Files.writeString(coverHtml, content);
 
     Path src = book.getCoverJpgFullPath();
-    Path dst = templateDstPath.resolve("OEBPS/Images/cover.jpg");
+    Path dst = tempPath.resolve("OEBPS/Images/cover.jpg");
     if (src != null && Files.exists(src)) {
       Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
     } else {
@@ -185,7 +165,7 @@ public class MakeEpubFromTemplate {
    * @throws IOException -
    */
   private void setBookTocHtml() throws IOException {
-    Path tocHtml = templateDstPath.resolve("OEBPS/Text/toc.xhtml");
+    Path tocHtml = tempPath.resolve("OEBPS/Text/toc.xhtml");
     String content = Files.readString(tocHtml);
     content =
         content.replace("[toc item]", this.tocItemList)
@@ -200,17 +180,15 @@ public class MakeEpubFromTemplate {
    * @author quanqinle
    */
   private void genBodyHtmls() {
-    ConvertTxtToHtmls parse = new ConvertTxtToHtmls(srcFilePath, book);
+    ConvertTxtToHtmls parse = new ConvertTxtToHtmls(book);
     parse.convert();
-
-    makeContentForTocNcxAndContentOpf(book);
   }
 
   /**
    * Modify toc.ncx
    */
   private void modifyTocNcx() throws IOException {
-    Path tocNcxPath = templateDstPath.resolve("OEBPS/toc.ncx");
+    Path tocNcxPath = tempPath.resolve("OEBPS/toc.ncx");
 
     String content = Files.readString(tocNcxPath);
     content =
@@ -226,12 +204,12 @@ public class MakeEpubFromTemplate {
    * Modify content.opf
    */
   private void modifyContentOpf() throws IOException {
-    Path contentOpfPath = templateDstPath.resolve("OEBPS/content.opf");
+    Path contentOpfPath = tempPath.resolve("OEBPS/content.opf");
 
     String content = Files.readString(contentOpfPath);
     content =
         content
-            .replace("[UUID]", book.getUUID())
+            .replace("[UUID]", book.getUuid())
             .replace("[ISBN]", book.getIsbn())
             .replace("[BOOK'S TITLE]", book.getBookTitle())
             .replace("[NAME LASTNAME]", book.getAuthor())
@@ -247,42 +225,40 @@ public class MakeEpubFromTemplate {
 
   /**
    * Organize contents for toc.ncx and content.opf.
-   * <p>
-   * This method has been used in {@link #genBodyHtmls()}
    */
-  private void makeContentForTocNcxAndContentOpf(BookInfo bookInfo) {
+  private void makeContentForTocNcxAndContentOpf() {
     int index = 1;
 
     // cover
     navPointList =
         navPointList.concat(
             String.format(
-                Constant.FORMAT_NAV_POINT, index, index, bookInfo.getCoverTitle(), "cover.xhtml"));
+                Constant.FORMAT_NAV_POINT, index, index, book.getCoverTitle(), "cover.xhtml"));
     referenceList =
         referenceList.concat(
-            String.format(Constant.FORMAT_REFERENCE, "cover", "cover.xhtml", bookInfo.getCoverTitle()));
+            String.format(Constant.FORMAT_REFERENCE, "cover", "cover.xhtml", book.getCoverTitle()));
     tocItemList =
         tocItemList.concat(
-            String.format(Constant.FORMAT_TOC_ITEM, "cover.xhtml", bookInfo.getCoverTitle()));
+            String.format(Constant.FORMAT_TOC_ITEM, "cover.xhtml", book.getCoverTitle()));
     index++;
 
     // TOC
     navPointList =
         navPointList.concat(
             String.format(
-                Constant.FORMAT_NAV_POINT, index, index, bookInfo.getTocTitle(), "toc.xhtml"));
+                Constant.FORMAT_NAV_POINT, index, index, book.getTocTitle(), "toc.xhtml"));
     referenceList =
         referenceList.concat(
-            String.format(Constant.FORMAT_REFERENCE, "toc", "toc.xhtml", bookInfo.getTocTitle()));
+            String.format(Constant.FORMAT_REFERENCE, "toc", "toc.xhtml", book.getTocTitle()));
     tocItemList =
         tocItemList.concat(
-            String.format(Constant.FORMAT_TOC_ITEM, "toc.xhtml", bookInfo.getTocTitle()));
+            String.format(Constant.FORMAT_TOC_ITEM, "toc.xhtml", book.getTocTitle()));
     index++;
 
     // front matter
-    if (!bookInfo.getFrontMatter().isEmpty()) {
-      String frontMatterTitle = bookInfo.getFrontMatterTitle();
-      FileInfo frontMatter = bookInfo.getFrontMatter().get(frontMatterTitle);
+    if (!book.getFrontMatter().isEmpty()) {
+      String frontMatterTitle = book.getFrontMatterTitle();
+      FileInfo frontMatter = book.getFrontMatter().get(frontMatterTitle);
       String fileName = frontMatter.getFullName();
       navPointList =
               navPointList.concat(
@@ -299,9 +275,9 @@ public class MakeEpubFromTemplate {
       index++;
     }
 
-    if (bookInfo.isHasManyBooks()) {
+    if (book.isHasManyBooks()) {
       // some sub-book in it
-      for (LinkedHashMap<String, FileInfo> chapterMap : bookInfo.getSubBook().values()) {
+      for (LinkedHashMap<String, FileInfo> chapterMap : book.getSubBook().values()) {
         for (String chapterTitle : chapterMap.keySet()) {
           FileInfo fileInfo = chapterMap
                   .get(chapterTitle);
@@ -324,11 +300,10 @@ public class MakeEpubFromTemplate {
           index++;
         }
       }
-
     } else {
       // chapters in ONE book
-      for (String chapterTitle : bookInfo.getChapterMap().keySet()) {
-        FileInfo fileInfo = bookInfo.getChapterMap().get(chapterTitle);
+      for (String chapterTitle : book.getChapterMap().keySet()) {
+        FileInfo fileInfo = book.getChapterMap().get(chapterTitle);
 
         String fileName = fileInfo.getName();
         String fileFullName = fileInfo.getFullName();

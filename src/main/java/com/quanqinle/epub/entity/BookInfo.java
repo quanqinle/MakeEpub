@@ -11,20 +11,27 @@ import java.util.Map;
  * @author quanqinle
  */
 public class BookInfo {
+  /** original plain text file */
+  Path srcTxtPath;
   /** the directory for output */
   Path outputDir;
+  /** the full source path of epub template folder. If null, use default template built-in this project */
+  Path templateSrcPath;
   /** UUID.randomUUID().toString() */
   String uuid = "";
   /** ISBN is a numeric commercial book identifier which is intended to be unique. */
   String isbn = "";
   /** the title of the book, which will be used as the name of .epub */
-  String bookTitle = "";
+  String bookTitle = "ebook";
   /** author */
   String author = "";
   /** such as: 2021-03-06 */
   String createDate = "";
   /** language, such as: en,zh */
   String language = "";
+
+  /** the folder name in resource of this project, saving epub template and .html files */
+  private String tempFolder = "epub-temp";
   /**
    * the chapter title of cover, used in places like these: &lt;title>&lt;h1>, etc.
    */
@@ -37,13 +44,10 @@ public class BookInfo {
    */
   String tocTitle = "目录";
 
-  /** the folder name in resource of this project, saving epub template */
-  String templateName = "template";
-
-  /** the name of front matter which is just before the 1st chapter */
+  /** the chapter title of front matter which is just before the 1st chapter */
   String frontMatterTitle = "引言";
   /** the file name of front matter without suffix */
-  String frontMatterFile = "front_matter";
+  private String frontMatterFile = "front_matter";
 
   /**
    * front matter in the book
@@ -84,6 +88,14 @@ public class BookInfo {
   public BookInfo() {
   }
 
+  public Path getSrcTxtPath() {
+    return srcTxtPath;
+  }
+
+  public void setSrcTxtPath(Path srcTxtPath) {
+    this.srcTxtPath = srcTxtPath;
+  }
+
   public Path getOutputDir() {
     return outputDir;
   }
@@ -92,12 +104,12 @@ public class BookInfo {
     this.outputDir = outputDir;
   }
 
-  public String getUUID() {
-    return uuid;
+  public Path getTemplateSrcPath() {
+    return templateSrcPath;
   }
 
-  public void setUUID(String uuid) {
-    this.uuid = uuid;
+  public void setTemplateSrcPath(Path templateSrcPath) {
+    this.templateSrcPath = templateSrcPath;
   }
 
   public String getIsbn() {
@@ -204,12 +216,12 @@ public class BookInfo {
     this.tocTitle = tocTitle;
   }
 
-  public String getTemplateName() {
-    return templateName;
+  public String getTempFolder() {
+    return tempFolder;
   }
 
-  public void setTemplateName(String templateName) {
-    this.templateName = templateName;
+  public void setTempFolder(String tempFolder) {
+    this.tempFolder = tempFolder;
   }
 
   public String getFrontMatterTitle() {
