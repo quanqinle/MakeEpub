@@ -1,0 +1,28 @@
+---
+srcTxtPath: "C:\\Users\\quanql\\Desktop\\《亵渎》烟雨江南.txt"
+outputDir: "C:\\MyData\\epub"
+#templateSrcPath: "C:\\MyData\\template"
+
+#uuid: ""
+#isbn: ""
+bookTitle: "亵渎"
+author: "烟雨江南"
+createDate: "2023-04-15"
+language: "zh"
+
+coverTitle: "封面"
+#coverJpgFullPath: "C:\\MyData\\cover.jpg"
+tocTitle: "目录"
+frontMatterTitle: "引言"
+
+chapterTitleRegexList:
+  - "^第.{1,10}章.{1,20}[^完]"
+  - "^第.{1,10}节.{1,20}[^完]"
+  - "^初章.{1,20}[^完]"
+removeList:
+  - "　"
+
+hasManyBooks: true
+bookTitleRegexList:
+  - "^第.{1,10}卷.{1,20}[^完]"
+  - "^第.{1,10}册.{1,20}[^完]"
