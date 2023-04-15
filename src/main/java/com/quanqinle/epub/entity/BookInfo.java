@@ -2,6 +2,7 @@ package com.quanqinle.epub.entity;
 
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,8 +25,25 @@ public class BookInfo {
   String createDate = "";
   /** language, such as: en,zh */
   String language = "";
+  /**
+   * the chapter title of cover, used in places like these: &lt;title>&lt;h1>, etc.
+   */
+  String coverTitle = "封面";
   /** full path of the cover picture, ONLY .jpg allowed current */
   Path coverJpgFullPath;
+
+  /**
+   * the chapter title of TOC, used in places like these: &lt;title>&lt;h1>, etc.
+   */
+  String tocTitle = "目录";
+
+  /** the folder name in resource of this project, saving epub template */
+  String templateName = "template";
+
+  /** the name of front matter which is just before the 1st chapter */
+  String frontMatterTitle = "引言";
+  /** the file name of front matter without suffix */
+  String frontMatterFile = "front_matter";
 
   /**
    * front matter in the book
@@ -33,8 +51,21 @@ public class BookInfo {
    */
   LinkedHashMap<String, FileInfo> frontMatter = new LinkedHashMap<>();
 
+  /** Note: modify this regex if the sub-book title is not match in your book. */
+  List<String> bookTitleRegexList =
+          List.of("^第.{1,10}卷.{1,20}[^完]", "^第.{1,10}册.{1,20}[^完]");
+
+  /** Note: modify this regex if the chapter title is not match in your book. */
+  List<String> chapterTitleRegexList =
+          List.of("^第.{1,10}章.{1,20}[^完]", "^第.{1,10}节.{1,20}[^完]", "^初章.{1,20}[^完]");
   /**
-   * More than ONE sub-book/volume in the book. Default false.
+   * some chart or String have to be trimmed in the whole book. NOTE! If you want to remove
+   * something in the book, change them into the parameter.
+   */
+  List<String> removeList = List.of("　");
+  /**
+   * More than ONE sub-book/volume in the book.
+   * <p>`false` by default.
    */
   boolean hasManyBooks = false;
   /**
@@ -49,6 +80,9 @@ public class BookInfo {
    * <p> Use {@link #chapterMap} or {@link #subBook}.
    */
   LinkedHashMap<String, LinkedHashMap<String, FileInfo>> subBook = new LinkedHashMap<>();
+
+  public BookInfo() {
+  }
 
   public Path getOutputDir() {
     return outputDir;
@@ -152,5 +186,69 @@ public class BookInfo {
 
   public void setSubBook(LinkedHashMap<String, LinkedHashMap<String, FileInfo>> subBook) {
     this.subBook = subBook;
+  }
+
+  public String getCoverTitle() {
+    return coverTitle;
+  }
+
+  public void setCoverTitle(String coverTitle) {
+    this.coverTitle = coverTitle;
+  }
+
+  public String getTocTitle() {
+    return tocTitle;
+  }
+
+  public void setTocTitle(String tocTitle) {
+    this.tocTitle = tocTitle;
+  }
+
+  public String getTemplateName() {
+    return templateName;
+  }
+
+  public void setTemplateName(String templateName) {
+    this.templateName = templateName;
+  }
+
+  public String getFrontMatterTitle() {
+    return frontMatterTitle;
+  }
+
+  public void setFrontMatterTitle(String frontMatterTitle) {
+    this.frontMatterTitle = frontMatterTitle;
+  }
+
+  public String getFrontMatterFile() {
+    return frontMatterFile;
+  }
+
+  public void setFrontMatterFile(String frontMatterFile) {
+    this.frontMatterFile = frontMatterFile;
+  }
+
+  public List<String> getBookTitleRegexList() {
+    return bookTitleRegexList;
+  }
+
+  public void setBookTitleRegexList(List<String> bookTitleRegexList) {
+    this.bookTitleRegexList = bookTitleRegexList;
+  }
+
+  public List<String> getChapterTitleRegexList() {
+    return chapterTitleRegexList;
+  }
+
+  public void setChapterTitleRegexList(List<String> chapterTitleRegexList) {
+    this.chapterTitleRegexList = chapterTitleRegexList;
+  }
+
+  public List<String> getRemoveList() {
+    return removeList;
+  }
+
+  public void setRemoveList(List<String> removeList) {
+    this.removeList = removeList;
   }
 }

@@ -54,10 +54,10 @@ public class MakeEpubFromTemplate {
    * book)} with templateSrcPath=null.
    *
    * @param srcFilePath original plain text file
-   * @param book output book
+   * @param bookInfo output book
    */
-  public MakeEpubFromTemplate(Path srcFilePath, BookInfo book) {
-    this(srcFilePath, null, book);
+  public MakeEpubFromTemplate(Path srcFilePath, BookInfo bookInfo) {
+    this(srcFilePath, null, bookInfo);
   }
 
   /**
@@ -66,19 +66,19 @@ public class MakeEpubFromTemplate {
    * @param srcFilePath original plain text file
    * @param templateSrcPath source path of epub template folder. If null, use default template
    *     built-in this project
-   * @param book output book
+   * @param bookInfo output book
    */
-  public MakeEpubFromTemplate(Path srcFilePath, Path templateSrcPath, BookInfo book) {
+  public MakeEpubFromTemplate(Path srcFilePath, Path templateSrcPath, BookInfo bookInfo) {
     this.srcFilePath = srcFilePath;
-    this.book = book;
-    this.templateDstPath = book.getOutputDir().resolve(Constant.TEMPLATE_NAME);
+    this.book = bookInfo;
+    this.templateDstPath = book.getOutputDir().resolve(bookInfo.getTemplateName());
 
     if (templateSrcPath != null) {
       this.templateSrcPath = templateSrcPath;
     } else {
       try {
         // The codes below will run error, if execute jar created from this project which resource folder in it.
-        URL templateSrcUrl = getClass().getClassLoader().getResource(Constant.TEMPLATE_NAME);
+        URL templateSrcUrl = getClass().getClassLoader().getResource(bookInfo.getTemplateName());
         assert templateSrcUrl != null;
         this.templateSrcPath = Paths.get(templateSrcUrl.toURI());
       } catch (URISyntaxException e) {
@@ -189,7 +189,7 @@ public class MakeEpubFromTemplate {
     String content = Files.readString(tocHtml);
     content =
         content.replace("[toc item]", this.tocItemList)
-                .replace("[TOC TITLE]", Constant.TOC_TITLE);
+                .replace("[TOC TITLE]", book.getTocTitle());
     Files.writeString(tocHtml, content);
   }
 
@@ -257,31 +257,31 @@ public class MakeEpubFromTemplate {
     navPointList =
         navPointList.concat(
             String.format(
-                Constant.FORMAT_NAV_POINT, index, index, Constant.COVER_TITLE, "cover.xhtml"));
+                Constant.FORMAT_NAV_POINT, index, index, bookInfo.getCoverTitle(), "cover.xhtml"));
     referenceList =
         referenceList.concat(
-            String.format(Constant.FORMAT_REFERENCE, "cover", "cover.xhtml", Constant.COVER_TITLE));
+            String.format(Constant.FORMAT_REFERENCE, "cover", "cover.xhtml", bookInfo.getCoverTitle()));
     tocItemList =
         tocItemList.concat(
-            String.format(Constant.FORMAT_TOC_ITEM, "cover.xhtml", Constant.COVER_TITLE));
+            String.format(Constant.FORMAT_TOC_ITEM, "cover.xhtml", bookInfo.getCoverTitle()));
     index++;
 
     // TOC
     navPointList =
         navPointList.concat(
             String.format(
-                Constant.FORMAT_NAV_POINT, index, index, Constant.TOC_TITLE, "toc.xhtml"));
+                Constant.FORMAT_NAV_POINT, index, index, bookInfo.getTocTitle(), "toc.xhtml"));
     referenceList =
         referenceList.concat(
-            String.format(Constant.FORMAT_REFERENCE, "toc", "toc.xhtml", Constant.TOC_TITLE));
+            String.format(Constant.FORMAT_REFERENCE, "toc", "toc.xhtml", bookInfo.getTocTitle()));
     tocItemList =
         tocItemList.concat(
-            String.format(Constant.FORMAT_TOC_ITEM, "toc.xhtml", Constant.TOC_TITLE));
+            String.format(Constant.FORMAT_TOC_ITEM, "toc.xhtml", bookInfo.getTocTitle()));
     index++;
 
     // front matter
     if (!bookInfo.getFrontMatter().isEmpty()) {
-      String frontMatterTitle = Constant.FRONT_MATTER_TITLE;
+      String frontMatterTitle = bookInfo.getFrontMatterTitle();
       FileInfo frontMatter = bookInfo.getFrontMatter().get(frontMatterTitle);
       String fileName = frontMatter.getFullName();
       navPointList =

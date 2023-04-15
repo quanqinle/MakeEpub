@@ -2,7 +2,6 @@ package com.quanqinle.epub;
 
 import com.quanqinle.epub.entity.BookInfo;
 import com.quanqinle.epub.entity.FileInfo;
-import com.quanqinle.epub.util.Constant;
 import com.quanqinle.epub.util.EpubUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +13,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Convert a plain text file `.txt` to some `.xhtml` files.
@@ -26,7 +23,7 @@ public class ConvertTxtToHtmls {
   private static final Logger logger = LoggerFactory.getLogger(ConvertTxtToHtmls.class);
 
   /** file name used when generate new sub-book file */
-  private String bookFileNameFormat = "book-%d";
+  private final String bookFileNameFormat = "book-%d";
   /** file name used when generate new chapter file */
   private final String chapterFileNameFormat = "chapter-%03d";
   /** original plain text file */
@@ -36,11 +33,16 @@ public class ConvertTxtToHtmls {
   /** the folder for storing .xhtml files */
   private final Path drtHtmlFolderPath;
 
-  public ConvertTxtToHtmls(Path srcTxtPath, BookInfo book) {
+  /**
+   * Constructor
+   * @param srcTxtPath  original plain text file
+   * @param bookInfo book info
+   */
+  public ConvertTxtToHtmls(Path srcTxtPath, BookInfo bookInfo) {
     this.srcTxtPath = srcTxtPath;
-    this.book = book;
+    this.book = bookInfo;
     this.drtHtmlFolderPath =
-        book.getOutputDir().resolve(Constant.TEMPLATE_NAME).resolve("OEBPS/Text");
+        book.getOutputDir().resolve(bookInfo.getTemplateName()).resolve("OEBPS/Text");
   }
 
   public void convert() {
@@ -94,10 +96,6 @@ public class ConvertTxtToHtmls {
       return;
     }
 
-    List<String> removeList = List.copyOf(Constant.REMOVE_LIST);
-    List<String> bookRegexList = List.copyOf(Constant.BOOK_TITLE_REGEX_LIST);
-    List<String> chapterRegexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
-
     String subBookName = "";
     String chapterName = "";
     // html body
@@ -112,7 +110,7 @@ public class ConvertTxtToHtmls {
     int idxChapter = 0;
 
     for (String line : allLines) {
-      for (String s : removeList) {
+      for (String s : bookInfo.getRemoveList()) {
         line = line.replace(s, "").trim();
       }
 
@@ -121,8 +119,8 @@ public class ConvertTxtToHtmls {
         continue;
       }
 
-      boolean isSubBookTitle = isSubBookTitle(line, bookRegexList);
-      boolean isChapterTitle = isChapterTitle(line, chapterRegexList);
+      boolean isSubBookTitle = isSubBookTitle(line, bookInfo.getBookTitleRegexList());
+      boolean isChapterTitle = isChapterTitle(line, bookInfo.getChapterTitleRegexList());
       if (isFirstLine) {
         isFirstLine = false;
         if (!isSubBookTitle && !isChapterTitle) {
@@ -139,10 +137,10 @@ public class ConvertTxtToHtmls {
           // save the previous lines into `front matter`
           List<String> copy = new ArrayList<>(htmlBodyLines);
           FileInfo fileInfo =
-              new FileInfo(Constant.FRONT_MATTER_FILE, Constant.FRONT_MATTER_TITLE, copy);
-          bookInfo.getFrontMatter().put(Constant.FRONT_MATTER_TITLE, fileInfo);
+              new FileInfo(bookInfo.getFrontMatterFile(), bookInfo.getFrontMatterTitle(), copy);
+          bookInfo.getFrontMatter().put(bookInfo.getFrontMatterTitle(), fileInfo);
           logger.info(
-              "Front-matter [{}] has [{}] lines", Constant.FRONT_MATTER_TITLE, htmlBodyLines.size());
+              "Front-matter [{}] has [{}] lines", bookInfo.getFrontMatterTitle(), htmlBodyLines.size());
         } else {
           if (isPreviousLineInChapter) {
             // save the previous chapter body
@@ -191,16 +189,13 @@ public class ConvertTxtToHtmls {
       return;
     }
 
-    List<String> removeList = List.copyOf(Constant.REMOVE_LIST);
-    List<String> regexList = List.copyOf(Constant.CHAPTER_TITLE_REGEX_LIST);
-
     String chapterName = "";
     // chapter body
     List<String> chapterLines = new ArrayList<>();
 
     int i = 1;
     for (String line : allLines) {
-      for (String s : removeList) {
+      for (String s : bookInfo.getRemoveList()) {
         line = line.replace(s, "").trim();
       }
 
@@ -211,19 +206,20 @@ public class ConvertTxtToHtmls {
 
       // If chapter title, save chapterLines into the previous chapter.
       // If Not chapter title, save line into chapterLines.
-      if (!isChapterTitle(line, regexList)) {
+      if (!isChapterTitle(line, bookInfo.getChapterTitleRegexList())) {
         chapterLines.add("<p>" + line + "</p>");
       } else {
         // chapterName is blank means the current line is the 1st chapter title
         if (chapterName.isBlank()) {
           if (chapterLines.isEmpty()) {
             // the 1st chapter title is just the 1st line of the book.
+            logger.info("It is the 1st chapter");
           } else {
             // save the previous lines into `front matter`
             List<String> copy = new ArrayList<>(chapterLines);
             FileInfo fileInfo =
-                new FileInfo(Constant.FRONT_MATTER_FILE, Constant.FRONT_MATTER_TITLE, copy);
-            bookInfo.getFrontMatter().put(Constant.FRONT_MATTER_TITLE, fileInfo);
+                new FileInfo(bookInfo.getFrontMatterFile(), bookInfo.getFrontMatterTitle(), copy);
+            bookInfo.getFrontMatter().put(bookInfo.getFrontMatterTitle(), fileInfo);
           }
         } else {
           // save the previous chapter body
@@ -251,7 +247,7 @@ public class ConvertTxtToHtmls {
           .put(
               chapterName,
               new FileInfo(
-                  String.format(chapterFileNameFormat, i++),
+                  String.format(chapterFileNameFormat, i),
                   chapterName,
                   new ArrayList<>(chapterLines)));
 
@@ -269,10 +265,8 @@ public class ConvertTxtToHtmls {
    * @return -
    */
   private boolean isChapterTitle(String line, List<String> chapterTitleRegexList) {
-    for (String reg : chapterTitleRegexList) {
-      Pattern p = Pattern.compile(reg);
-      Matcher m = p.matcher(line);
-      if (m.find()) {
+    for (String regex : chapterTitleRegexList) {
+      if (line.matches(regex)) {
         return true;
       }
     }
@@ -288,10 +282,8 @@ public class ConvertTxtToHtmls {
    * @return -
    */
   private boolean isSubBookTitle(String line, List<String> chapterTitleRegexList) {
-    for (String reg : chapterTitleRegexList) {
-      Pattern p = Pattern.compile(reg);
-      Matcher m = p.matcher(line);
-      if (m.find()) {
+    for (String regex : chapterTitleRegexList) {
+      if (line.matches(regex)) {
         return true;
       }
     }
@@ -311,11 +303,11 @@ public class ConvertTxtToHtmls {
       return;
     }
 
-    FileInfo frontMatter = bookInfo.getFrontMatter().get(Constant.FRONT_MATTER_TITLE);
+    FileInfo frontMatter = bookInfo.getFrontMatter().get(bookInfo.getFrontMatterTitle());
     Path htmlPath = htmlFolderPath.resolve(frontMatter.getFullName());
     frontMatter.setFullPath(htmlPath);
 
-    EpubUtils.writeHtmlFile(Constant.FRONT_MATTER_TITLE, frontMatter.getLines(), htmlPath);
+    EpubUtils.writeHtmlFile(bookInfo.getFrontMatterTitle(), frontMatter.getLines(), htmlPath);
   }
 
   /**
