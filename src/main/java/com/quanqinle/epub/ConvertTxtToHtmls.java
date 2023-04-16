@@ -99,7 +99,7 @@ public class ConvertTxtToHtmls {
    * @param bookInfo book info
    */
   private void parseLinesToBooks(List<String> allLines, BookInfo bookInfo) {
-    logger.info("begin parseLines()...");
+    logger.info("begin parseLinesToBooks()...");
 
     if (allLines == null || allLines.isEmpty()) {
       logger.error("allLines is empty!");
@@ -110,7 +110,7 @@ public class ConvertTxtToHtmls {
     String chapterName = "";
     // html body
     List<String> htmlBodyLines = new ArrayList<>();
-    // is previous line in a chapter?
+    // is previous line in a chapter or a sub-book?
     boolean isPreviousLineInChapter = false;
 
     boolean isFirstLine = true;
@@ -189,6 +189,8 @@ public class ConvertTxtToHtmls {
         }
       }
     } // end for-loop allLines
+
+    logger.info("end parseLinesToBooks()...");
   }
 
   /**
@@ -209,7 +211,7 @@ public class ConvertTxtToHtmls {
     // chapter body
     List<String> chapterLines = new ArrayList<>();
 
-    int i = 1;
+    int idxChapter = 1;
     for (String line : allLines) {
       for (String s : bookInfo.getRemoveList()) {
         line = line.replace(s, "").trim();
@@ -236,12 +238,14 @@ public class ConvertTxtToHtmls {
             FileInfo fileInfo =
                 new FileInfo(bookInfo.getFrontMatterFile(), bookInfo.getFrontMatterTitle(), copy);
             bookInfo.getFrontMatter().put(bookInfo.getFrontMatterTitle(), fileInfo);
+            logger.info(
+                    "Front-matter [{}] has [{}] lines", bookInfo.getFrontMatterTitle(), chapterLines.size());
           }
         } else {
           // save the previous chapter body
           List<String> copy = new ArrayList<>(chapterLines);
-          String fileName = String.format(chapterFileNameFormat, i);
-          i++;
+          String fileName = String.format(chapterFileNameFormat, idxChapter);
+          idxChapter++;
           FileInfo fileInfo = new FileInfo(fileName, chapterName, copy);
 
           bookInfo.getChapterMap().put(chapterName, fileInfo);
@@ -257,13 +261,12 @@ public class ConvertTxtToHtmls {
 
     // save the last chapter
     if (!chapterName.isBlank()) {
-
       bookInfo
           .getChapterMap()
           .put(
               chapterName,
               new FileInfo(
-                  String.format(chapterFileNameFormat, i),
+                  String.format(chapterFileNameFormat, idxChapter),
                   chapterName,
                   new ArrayList<>(chapterLines)));
 

@@ -1,14 +1,29 @@
 package com.quanqinle.epub;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.quanqinle.epub.entity.BookInfo;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConvertTxtToHtmlsTest {
+
+  @Test
+  void convertByBookInfoInYaml() throws IOException {
+    // 书的配置文件
+    ObjectMapper mapper = new YAMLMapper();
+    BookInfo book = mapper.readValue(Files.newInputStream(Path.of("bookinfo.yaml")), BookInfo.class);
+
+    ConvertTxtToHtmls parse = new ConvertTxtToHtmls(book);
+    parse.convert();
+  }
 
   @Test
   void convert() {

@@ -1,28 +1,42 @@
 ---
-srcTxtPath: "C:\\Users\\quanql\\Desktop\\《亵渎》烟雨江南.txt"
-outputDir: "C:\\MyData\\epub"
-#templateSrcPath: "C:\\MyData\\template"
+srcTxtPath: "D:\\红楼梦.txt"
+outputDir: "D:\\book"
+# In most cases, the epub templates in the project resource file are good enough.
+# Set this parameter, if you want custom templates.
+#templateSrcPath: "D:\\epub-template"
 
+bookTitle: "红楼梦"
+author: "曹雪芹"
+createDate: "2023-04-16"
+language: "zh"
 #uuid: ""
 #isbn: ""
-bookTitle: "亵渎"
-author: "烟雨江南"
-createDate: "2023-04-15"
-language: "zh"
 
+# The <title>*</title> in cover .html
 coverTitle: "封面"
+# The cover jpg. Use a built-in jpg by default.
 #coverJpgFullPath: "C:\\MyData\\cover.jpg"
+# The <title>*</title> in table of content .html
 tocTitle: "目录"
+# The <title>*</title> in front matter .html
 frontMatterTitle: "引言"
 
+# Remove the following strings after reading lines of the source file
+removeList:
+  - "　"
+
+# The regex list for chapter line
 chapterTitleRegexList:
   - "^第.{1,10}章.{1,20}[^完]"
   - "^第.{1,10}节.{1,20}[^完]"
   - "^初章.{1,20}[^完]"
-removeList:
-  - "　"
 
+# If more than one sub-book in this source file, set it true.
+# False by default.
 hasManyBooks: true
+# If `hasManyBooks = true`, this parameter enable.
+# The regex list for sub-book or volume line
 bookTitleRegexList:
+  - "^第.{1,10}部.{1,20}"
   - "^第.{1,10}卷.{1,20}[^完]"
   - "^第.{1,10}册.{1,20}[^完]"
