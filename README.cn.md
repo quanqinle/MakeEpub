@@ -11,9 +11,8 @@
 
 ## 将一个 `.txt` 格式电子书转制成 `.epub`
 
-已有纯文本格式的电子书，如`xx.txt`，将其按章节分成多个`chapter-???.xhtml`文件，
-并根据这些章节文件生成目录文件`toc.xhtml`，再使用工程中的模板`template`，生成 epub。
- 
+已有纯文本格式的电子书，如`xx.txt`，将其按章节分成多个`chapter-???.xhtml`文件，并根据这些章节文件生成目录文件`toc.xhtml`，再使用工程中的模板`template`，生成 epub。
+
 ### 前提条件
 
 > 注意：
@@ -59,52 +58,82 @@
 ```
 
 ### 使用方法
-> `MakeEpubFromTemplate.java`
+见 `MakeEpubFromTemplateTest.java`
 
-```java
-public class Demo() {
-    public static void main(String[] args) throws IOException {
-        // 源文件
-        Path srcFilePath = Paths.get("D:", "book-library", "demo.txt");
+推荐通过 `bookinfo.yaml` 文件配置参数，然后完成书籍转换。
+```Java
+class MakeEpubFromTemplateTest {
+  @Test
+  void makeByBookInfoInYaml() throws IOException {
+    // 书的配置文件
+    ObjectMapper mapper = new YAMLMapper();
+    BookInfo book = mapper.readValue(Files.newInputStream(Path.of("bookinfo.yaml")), BookInfo.class);
+    
+    MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(book);
+    makeEpub.make();
+  }
+}
+```
 
-        // 目标文件
-        BookInfo book = new BookInfo();
-        book.setOutputDir(Paths.get("D:", "epub"));
-        /* 以下属性非必须 */
-        book.setBookTitle("红楼梦");
-        book.setAuthor("曹雪芹");
-        book.setCoverJpgFullPath(Paths.get("D:", "book.jpg")); // 设置jpg格式的封面图
-        // 建议设置上面3个
-        book.setUUID(UUID.randomUUID().toString());
-        book.setLanguage("zh");
-        book.setCreateDate("2021-03-06");
-        
-        // make srcFilePath to a .epub book
-        MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(srcFilePath, book);
-        makeEpub.make();
+或者，给对象设置参数。
+```Java
+class MakeEpubFromTemplateTest {
+
+  void make() {
+    BookInfo book = new BookInfo();
+    // 源文件
+    book.setSrcTxtPath(Paths.get("D:", "红楼梦.txt"));
+    // 目标文件
+    book.setOutputDir(Paths.get("D:", "demo"));
+    book.setHasManyBooks(true);
+
+    /* 以下属性非必须 */
+    book.setBookTitle("红楼梦");
+    book.setAuthor("曹雪芹");
+    // 设置 jpg 格式的封面图
+    book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
+
+    // 建议设置上面3个
+
+    book.setUuid(UUID.randomUUID().toString());
+    book.setLanguage("zh");
+    book.setCreateDate("2023-04-07");
+
+    // make srcFilePath to a .epub book
+    MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(book);
+    try {
+      makeEpub.make();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
+  
 }
 ```
 
 ## 将电子书文件夹压制成 `.epub`
 
-### 前提条件
-文件夹中的内容符合 epub 规范。
+如果你只是想把文件夹里的内容压制成 epub，参考下面例子。
+> 前提条件：
+> 文件夹中的内容符合 epub 规范。
 
-### 使用方法
-> `MakeEpubFromTemplate.java`
+见 `EpubUtilsTest.java`
 
 ```java
-public class Demo() {
-    public static void main(String[] args) {
-        Path epubSrcFolderPath = Paths.get("D:", "epub", "book-folder");
-        Path epubFilePath = Paths.get("D:", "my-book.epub");
-        try {
-            zipEpub(epubSrcFolderPath, epubFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+class EpubUtilsTest {
+
+  @Test
+  void zipEpub() {
+    Path epubSrcFolderPath = Paths.get("D:", "book-template");
+    Path epubFilePath = Paths.get("D:", "my-book.epub");
+
+    try {
+      EpubUtils.zipEpub(epubSrcFolderPath, epubFilePath);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+  }
+  
 }
 ```
 

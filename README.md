@@ -56,52 +56,84 @@ Many chapter xhtml will be created, such as `chapter-001.xhtml`:
 ```
 
 ### Usage
-> `MakeEpubFromTemplate.java`
 
-```java
-public class Demo() {
-    public static void main(String[] args) throws IOException {
-        // source .txt file
-        Path srcFilePath = Paths.get("D:", "book-library", "demo.txt");
+See `MakeEpubFromTemplateTest.java`
 
-        // target .epub file 
-        BookInfo book = new BookInfo();
-        book.setOutputDir(Paths.get("D:", "epub"));
-        /* The following attributes are not required */
-        book.setBookTitle("红楼梦");
-        book.setAuthor("曹雪芹");
-        book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
-        // Suggestion: Set the three above
-        book.setUUID(UUID.randomUUID().toString());
-        book.setLanguage("zh");
-        book.setCreateDate("2021-03-06");
-        
-        // make srcFilePath to a .epub book
-        MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(srcFilePath, book);
-        makeEpub.make();
-    }
+[Recommend] Use `bookinfo.yaml` to set parameters, then complete to make the book。
+```Java
+class MakeEpubFromTemplateTest {
+  @Test
+  void makeByBookInfoInYaml() throws IOException {
+    // 书的配置文件
+    ObjectMapper mapper = new YAMLMapper();
+    BookInfo book = mapper.readValue(Files.newInputStream(Path.of("bookinfo.yaml")), BookInfo.class);
+    
+    MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(book);
+    makeEpub.make();
+  }
 }
 ```
 
-## Zip a folder into `.epub`
+Or, set parameters by book object.
+```Java
+class MakeEpubFromTemplateTest {
+    
+  void make() {
+    BookInfo book = new BookInfo();
+    // 源文件
+    book.setSrcTxtPath(Paths.get("D:", "红楼梦.txt"));
+    // 目标文件
+    book.setOutputDir(Paths.get("D:", "demo"));
+    book.setHasManyBooks(true);
 
-### Prerequisites
-The folder needs to contain some right epub resources.
+    /* 以下属性非必须 */
+    book.setBookTitle("红楼梦");
+    book.setAuthor("曹雪芹");
+    // 设置 jpg 格式的封面图
+    book.setCoverJpgFullPath(Paths.get("D:", "book.jpg"));
 
-### Usage
-> `MakeEpubFromTemplate.java`
+    // 建议设置上面3个
 
-```java
-public class Demo() {
-    public static void main(String[] args) {
-        Path epubSrcFolderPath = Paths.get("D:", "epub", "book-folder");
-        Path epubFilePath = Paths.get("D:", "my-book.epub");
-        try {
-            zipEpub(epubSrcFolderPath, epubFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    book.setUuid(UUID.randomUUID().toString());
+    book.setLanguage("zh");
+    book.setCreateDate("2023-04-07");
+
+    // make srcFilePath to a .epub book
+    MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(book);
+    try {
+      makeEpub.make();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
+  
+}
+```
+
+
+## Zip a folder into `.epub`
+If you want to zip a folder which contains book contents into a `.epub`. 
+
+> Prerequisites: 
+> The folder needs to contain some right epub resources.
+
+See `EpubUtilsTest.java`
+
+```Java
+class EpubUtilsTest {
+
+  @Test
+  void zipEpub() {
+    Path epubSrcFolderPath = Paths.get("D:", "book-template");
+    Path epubFilePath = Paths.get("D:", "my-book.epub");
+
+    try {
+      EpubUtils.zipEpub(epubSrcFolderPath, epubFilePath);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
 }
 ```
 

@@ -32,12 +32,9 @@ class MakeEpubFromTemplateTest {
 
     // make srcFilePath to a .epub book
     MakeEpubFromTemplate makeEpub = new MakeEpubFromTemplate(book);
-    try {
-      makeEpub.make();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    makeEpub.make();
   }
+
   @Test
   void make() {
 
@@ -67,11 +64,6 @@ class MakeEpubFromTemplateTest {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Test
-  void zipEpub() {
-
   }
 
 }
