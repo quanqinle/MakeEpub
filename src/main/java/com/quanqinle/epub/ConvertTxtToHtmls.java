@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Convert a plain text file `.txt` to some `.xhtml` files.
@@ -120,8 +121,8 @@ public class ConvertTxtToHtmls {
     int idxChapter = 0;
 
     for (String line : allLines) {
-      for (String s : bookInfo.getRemoveList()) {
-        line = line.replace(s, "").trim();
+      for (Map.Entry<String, String> entry : bookInfo.getReplaceMap().entrySet()) {
+        line = line.replace(entry.getKey(), entry.getValue()).trim();
       }
 
       // skip empty line
@@ -213,8 +214,8 @@ public class ConvertTxtToHtmls {
 
     int idxChapter = 1;
     for (String line : allLines) {
-      for (String s : bookInfo.getRemoveList()) {
-        line = line.replace(s, "").trim();
+      for (Map.Entry<String, String> entry : bookInfo.getReplaceMap().entrySet()) {
+        line = line.replace(entry.getKey(), entry.getValue()).trim();
       }
 
       // skip empty line
@@ -366,4 +367,5 @@ public class ConvertTxtToHtmls {
     });
 
   }
+
 }

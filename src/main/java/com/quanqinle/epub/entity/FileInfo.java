@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * file info, mainly for .html file
+ * @author quanql
  */
 public class FileInfo {
   /** file name without suffix */

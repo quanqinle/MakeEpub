@@ -62,11 +62,14 @@ public class BookInfo {
   /** Note: modify this regex if the chapter title is not match in your book. */
   List<String> chapterTitleRegexList =
           List.of("^第.{1,10}章.{1,20}[^完]", "^第.{1,10}节.{1,20}[^完]", "^初章.{1,20}[^完]");
+
   /**
-   * some chart or String have to be trimmed in the whole book. NOTE! If you want to remove
-   * something in the book, change them into the parameter.
+   * Replace strings in the map.
+   * <p>old string -> new string
+   * <p>For example:
+   * <p>if some Strings have to be trimmed in the whole book.
    */
-  List<String> removeList = List.of("　");
+  Map<String, String> replaceMap;
   /**
    * More than ONE sub-book/volume in the book.
    * <p>`false` by default.
@@ -256,11 +259,11 @@ public class BookInfo {
     this.chapterTitleRegexList = chapterTitleRegexList;
   }
 
-  public List<String> getRemoveList() {
-    return removeList;
+  public Map<String, String> getReplaceMap() {
+    return replaceMap;
   }
 
-  public void setRemoveList(List<String> removeList) {
-    this.removeList = removeList;
+  public void setReplaceMap(Map<String, String> replaceMap) {
+    this.replaceMap = replaceMap;
   }
 }

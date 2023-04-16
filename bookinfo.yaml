@@ -21,9 +21,9 @@ tocTitle: "目录"
 # The <title>*</title> in front matter .html
 frontMatterTitle: "引言"
 
-# Remove the following strings after reading lines of the source file
-removeList:
-  - "　"
+# Replace the following strings after reading lines of the source file
+replaceMap:
+  "　": ""
 
 # The regex list for chapter line
 chapterTitleRegexList:
