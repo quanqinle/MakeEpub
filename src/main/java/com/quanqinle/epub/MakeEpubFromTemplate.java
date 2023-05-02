@@ -276,17 +276,28 @@ public class MakeEpubFromTemplate {
     }
 
     if (book.isHasManyBooks()) {
+      String navPointEnd = "</navPoint>";
       // some sub-book in it
       for (LinkedHashMap<String, FileInfo> chapterMap : book.getSubBook().values()) {
+        boolean isFirst = true;
         for (String chapterTitle : chapterMap.keySet()) {
-          FileInfo fileInfo = chapterMap
-                  .get(chapterTitle);
+          FileInfo fileInfo = chapterMap.get(chapterTitle);
 
           String fileName = fileInfo.getName();
           String fileFullName = fileInfo.getFullName();
-          navPointList =
-                  navPointList.concat(
-                          String.format(Constant.FORMAT_NAV_POINT, index, index, chapterTitle, fileFullName));
+
+          if (isFirst) {
+            String subBookNavPoint = Constant.FORMAT_NAV_POINT.split(navPointEnd)[0];
+            navPointList =
+                    navPointList.concat(
+                            String.format(subBookNavPoint, index, index, chapterTitle, fileFullName));
+            isFirst = false;
+          } else {
+            navPointList =
+                    navPointList.concat(
+                            String.format(Constant.FORMAT_NAV_POINT, index, index, chapterTitle, fileFullName));
+          }
+
           itemList =
                   itemList.concat(String.format(Constant.FORMAT_ITEM, fileFullName, fileName));
           itemrefList =
@@ -299,6 +310,7 @@ public class MakeEpubFromTemplate {
 
           index++;
         }
+        navPointList = navPointList.concat(navPointEnd + "\n");
       }
     } else {
       // chapters in ONE book
