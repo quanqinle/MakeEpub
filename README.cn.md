@@ -1,5 +1,7 @@
 简体中文 | [English](./README.md)
 
+> To update to support 'epub3'
+
 [TOC]
 
 # 这个项目是什么？

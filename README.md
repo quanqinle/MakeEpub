@@ -1,5 +1,7 @@
 [简体中文](./README.cn.md) | English
 
+> To update to support 'epub3'
+
 # What is this?
 
 I LOVE EPUB.
