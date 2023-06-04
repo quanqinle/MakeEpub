@@ -1,11 +1,14 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
 
     <!-- ISBN -->
     <dc:identifier id="bookid" opf:scheme="ISBN">urn:isbn:[ISBN]</dc:identifier>
     <dc:title>[BOOK'S TITLE]</dc:title>
     <dc:rights>Copyright © [YEAR] [COPYRIGHT HOLDER]. All rights reserved.</dc:rights>
+
+    <!-- UUID generator: http://www.famkruithof.net/uuid/uuidgen -->
+    <dc:identifier opf:scheme="UUID">urn:uuid:[UUID]</dc:identifier>
 
     <!-- BISAC Subject Headings List: http://bisg.org/?page=BISACFaQ -->
     <dc:subject>[LIST / OF / SUBJECTS]</dc:subject>
@@ -14,41 +17,16 @@
 
     <dc:source>[SOURCE URL]</dc:source>
 
-    <!-- List of contributors
-
-         See: MARC Code List for Relators: http://www.loc.gov/marc/relators/relaterm.html
-
-         Examples:
-
-         * Editor [edt]
-           Use for a person or organization who prepares for publication a work not primarily his/her own,
-           such as by elucidating text, adding introductory or other critical matter, or technically directing
-           an editorial staff.
-
-         * Cover designer [cov]
-           Use for a person or organization responsible for the graphic design of a book cover,
-           album cover, slipcase, box, container, etc. For a person or organization responsible
-           for the graphic design of an entire book, use Book designer; for book jackets, use Bookjacket designer.
-
-         * Translator [trl]
-           Use for a person or organization who renders a text from one language into another, or from an older
-           form of a language into the modern form.
-
-         -->
-
     <dc:contributor opf:file-as="[LASTNAME, NAME]" opf:role="edt">[NAME LASTNAME]</dc:contributor>
     <dc:contributor opf:file-as="[LASTNAME, NAME]" opf:role="cov">[NAME LASTNAME]</dc:contributor>
 
     <dc:publisher>[PUBLISHER NAME]</dc:publisher>
-    <dc:date opf:event="publication">[DATE]</dc:date>
+    <dc:date>[DATE]</dc:date>
 
     <!-- Language code: http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes -->
     <dc:language>[LANGUAGE]</dc:language>
 
     <meta name="cover" content="cover.jpg" />
-
-    <!-- UUID generator: http://www.famkruithof.net/uuid/uuidgen -->
-    <dc:identifier opf:scheme="UUID">urn:uuid:[UUID]</dc:identifier>
 
   </metadata>
 

@@ -44,7 +44,7 @@ public class ConvertTxtToHtmls {
     this.srcTxtPath = bookInfo.getSrcTxtPath();
     this.book = bookInfo;
     this.drtHtmlFolderPath =
-        book.getOutputDir().resolve(bookInfo.getTempFolder()).resolve("OEBPS/Text");
+        book.getOutputDir().resolve(bookInfo.getTempFolder()).resolve("EPUB/Text");
   }
 
   /**
