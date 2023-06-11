@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 
 /**
- * Make the EPUB using the existing template
+ * Make the .epub using the existing template
  *
  * @author quanqinle
  */
@@ -145,13 +145,13 @@ public class MakeEpubFromTemplate {
    * @throws IOException -
    */
   private void setBookCover() throws IOException {
-    Path coverHtml = tempPath.resolve("EPUB/Text/cover.xhtml");
+    Path coverHtml = tempPath.resolve("OEBPS/Text/cover.xhtml");
     String content = Files.readString(coverHtml);
     content = content.replace("[BOOK'S TITLE]", book.getBookTitle());
     Files.writeString(coverHtml, content);
 
     Path src = book.getCoverJpgFullPath();
-    Path dst = tempPath.resolve("EPUB/Images/cover.jpg");
+    Path dst = tempPath.resolve("OEBPS/Images/cover.jpg");
     if (src != null && Files.exists(src)) {
       Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
     } else {
@@ -165,7 +165,7 @@ public class MakeEpubFromTemplate {
    * @throws IOException -
    */
   private void setBookTocHtml() throws IOException {
-    Path tocHtml = tempPath.resolve("EPUB/Text/toc.xhtml");
+    Path tocHtml = tempPath.resolve("OEBPS/Text/toc.xhtml");
     String content = Files.readString(tocHtml);
     content =
         content.replace("[toc item]", this.tocItemList)
@@ -188,7 +188,7 @@ public class MakeEpubFromTemplate {
    * Modify toc.ncx
    */
   private void modifyTocNcx() throws IOException {
-    Path tocNcxPath = tempPath.resolve("EPUB/toc.ncx");
+    Path tocNcxPath = tempPath.resolve("OEBPS/toc.ncx");
 
     String content = Files.readString(tocNcxPath);
     content =
@@ -204,7 +204,7 @@ public class MakeEpubFromTemplate {
    * Modify content.opf
    */
   private void modifyContentOpf() throws IOException {
-    Path contentOpfPath = tempPath.resolve("EPUB/content.opf");
+    Path contentOpfPath = tempPath.resolve("OEBPS/content.opf");
 
     String content = Files.readString(contentOpfPath);
     content =

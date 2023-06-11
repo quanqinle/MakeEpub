@@ -42,6 +42,7 @@
     <item href="Styles/main.css" id="main.css" media-type="text/css" />
     <item href="Images/cover.jpg" id="cover.jpg" media-type="image/jpeg" />
     <item href="Text/cover.xhtml" id="cover" media-type="application/xhtml+xml" />
+    <item href="Text/Copyright.xhtml" id="Copyright" media-type="application/xhtml+xml" />
     <item href="Text/toc.xhtml" id="toc" media-type="application/xhtml+xml" />
 
 [manifest item list]
@@ -68,6 +69,7 @@
        -->
   <spine toc="ncx">
     <itemref idref="cover" />
+    <itemref idref="Copyright" />
     <itemref idref="toc" />
 
 [spine itemref list]

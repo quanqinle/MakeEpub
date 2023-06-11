@@ -155,7 +155,7 @@ public class Demo() {
 ├── mimetype
 ├── META-INF
 │    └── container.xml 
-└── EPUB 
+└── OEBPS 
     ├── content.opf
     ├── toc.ncx
     ├── css
